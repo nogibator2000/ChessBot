@@ -8,9 +8,11 @@ namespace Custom_Chess_Bot
 {
     public partial class Form1 : Form
     {
-        PlayEngine pe;
+        private static CancellationTokenSource ct;
         readonly Settings settings = new Settings();
         private GlobalKeyboardHook _globalKeyboardHook;
+        private static readonly Logger logger = new Logger();
+        private static CancellationTokenSource cts;
 
         public void SetupKeyboardHooks()
         {
@@ -23,7 +25,6 @@ namespace Custom_Chess_Bot
         {
             SetupKeyboardHooks();
             InitializeComponent();
-            var dt = Task.Run(() => DisplayThread());
         }
         private void KeyPressHandler(object sender, GlobalKeyboardHookEventArgs e)
         {
@@ -56,13 +57,20 @@ namespace Custom_Chess_Bot
 
         private async void Button1_Click(object sender, EventArgs e)
         {
-            var imageAnalysis = new ImageAnalysis();
             var firstPosition = await GetMousePosition();
-            log.Text = imageAnalysis.GetColourBrighness(firstPosition).ToString();
+            log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
+        }
+        private async void Button5_Click(object sender, EventArgs e)
+        {
+            var firstPosition = await GetMousePosition();
+            log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
         }
         private void Button4_Click(object sender, EventArgs e)
         {
-            pe.CancelToken.Cancel();
+            if (ct != null)
+            {
+                ct.Cancel();
+            }
         }
         private async Task<Point> GetMousePosition()
         {
@@ -78,42 +86,66 @@ namespace Custom_Chess_Bot
         {
             log.Text = @"Click top-left board point.";
             var firstPosition = await GetMousePosition();
-            Thread.Sleep(250); //click duration
+            Thread.Sleep(500); //click duration
             log.Text = @"Click right-bottom board point.";
             var secondPosition = await GetMousePosition();
             var BoardSize = new Size(secondPosition.X - firstPosition.X, secondPosition.Y - firstPosition.Y);
             settings.CalibrateBoard(BoardSize, firstPosition);
             log.Text = @"Saved!";
         }
-        private void DisplayThread()
+        public void Log(string _log)
         {
-            while (true)
-            {
-                if (pe==null||pe.CancelToken.IsCancellationRequested)
+                if (log.InvokeRequired)
                 {
-                    var ia = new ImageAnalysis();
-                    DisplayBitMap(ia.CaptureScreen());
-                    Thread.Sleep(Settings.RefreshRate);
+                    log.Invoke(new MethodInvoker(delegate
+                    {
+                        log.Text = _log;
+                    }));
                 }
                 else
                 {
-                    if (log.InvokeRequired)
-                    {
-                        log.Invoke(new MethodInvoker(delegate
-                        {
-                            log.Text = pe.log;
-                        }));
-                    }
-                    Thread.Sleep(Settings.RefreshRate);
+                    log.Text = _log;
                 }
+        }
+        private void DisplayThread(CancellationTokenSource cts)
+        {
+            while (!cts.IsCancellationRequested)
+            {
+                    DisplayBitMap(ImageAnalysis.CaptureScreen());
+                    Thread.Sleep(1000);
             }
         }
-    
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (button5.Text == "Display")
+            {
+                cts = new CancellationTokenSource();
+                Task.Run(() => DisplayThread(cts), cts.Token);
+                button5.Text = "Stop display";
+            }
+            else
+            {
+                cts.Cancel();
+                cts.Dispose();
+                button5.Text = "Display";
+            }
+        }
         private void button3_Click(object sender, EventArgs e)
         {
-            pe = new PlayEngine();
-            var pt = Task.Run(() => pe.PlayThread());
- 
+            Task.Run(() =>
+            {
+                if (ct != null)
+                {
+                    ct.Cancel();
+                }
+                ct = new CancellationTokenSource();
+                Task.Run(() =>
+                 {
+                     logger.Log(Logger.SpawnThread, "Play");
+                     var pe = new PlayEngine(ct, this);
+                     pe.Dispose();
+                 });
+            });
         }
     }
 }

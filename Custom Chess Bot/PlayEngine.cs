@@ -11,12 +11,15 @@ using System.Windows.Forms;
 
 namespace Custom_Chess_Bot
 {
-    class PlayEngine
+    class PlayEngine: IDisposable
     {
-        public CancellationTokenSource CancelToken = new CancellationTokenSource();
+        public PlayEngine(CancellationTokenSource ct, Form1 form)
+        {
+            PlayThread(ct, form);
+        }
+        private static readonly Logger logger = new Logger();
 
         private static readonly Settings settings = new Settings();
-        public string log;
         [DllImport("user32.dll")]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
         private const int MOUSEEVENTF_LEFTDOWN = 0x02;
@@ -25,120 +28,90 @@ namespace Custom_Chess_Bot
         private const int MOUSEEVENTF_RIGHTUP = 0x10;
         public void MakeMouseClick(int X, int Y)
         {
-            Cursor.Position = new Point(X, Y);
-            Thread.Sleep(200);
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)X, (uint)Y, 0, 0);
-
+                Cursor.Position = new Point(X, Y);
+                Thread.Sleep(10);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)X, (uint)Y, 0, 0);
+            Thread.Sleep(10);
+            mouse_event(MOUSEEVENTF_LEFTUP, (uint)X, (uint)Y, 0, 0);
         }
-
-        public void PlayThread()
+        public Turn findEnemyTurn(bool side)
         {
-            var ia = new ImageAnalysis();
-            var side = ia.AmIWhite(ia.SliceTitles(ia.CaptureScreen()));
+            Turn turn;
+            var slicedBoard = ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen());
+            do
+            {
+                Thread.Sleep(settings.RefreshRate);
+                turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
+                if (turn.valid)
+                {
+                    Thread.Sleep(settings.RefreshRate);
+                    turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
+                }
+            } while (!turn.valid);
+            return turn;
+        }
+        public Turn enemyTurn(bool side, Board board)
+        {
+            var turn = findEnemyTurn(side);
+            board.MakeTurn(turn, side);
+            logger.Log(Logger.Turn + Logger.Enemy, turn.GetStr());
+            return turn;
+        }
+        public Turn myTurn(bool side, Board board, CancellationTokenSource ct, ChessEngine engine)
+        {
+            var _turn = engine.NextMove(board.GetTitles(), side);
+            if (!_turn.valid)
+                ct.Cancel();
+            MadeMove(_turn, side);
+            if (!board.MakeTurn(_turn, side))
+                MadeMove(_turn.end, side);//transform
+            logger.Log(Logger.Turn + Logger.Me, _turn.GetStr());
+            return _turn;
+        }
+        public void PlayThread(CancellationTokenSource ct, Form1 form)
+        {
             var engine = new ChessEngine();
+            var side = ImageAnalysis.AmIWhite(ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()));
+            var board = new Board();
             if (side)
             {
-                log = @"You are White!";
-                var board = new Board();
-                Task.Run(() =>
+                form.Log(@"You are White!");
+                while (!ct.Token.IsCancellationRequested)
                 {
-                    while (!CancelToken.IsCancellationRequested)
-                    {
-                        Task.Run(async () =>
-                        {
-                            var _turn = await engine.NextMove(board.GetTitles(), true);
-                            if (_turn.start != -2)
-                            {
-                                MadeMove(_turn);
-                                var transform = board.MakeTurn(_turn, side);
-                                if (!transform)
-                                {
-                                    MadeMove(new Turn(_turn.end, _turn.end));
-                                }
-                                File.AppendAllText(settings.LogPath, "[turn][me]: " + _turn.GetStr() + Environment.NewLine);
-                                log = _turn.GetStr();
-                            }
-                            else CancelToken.Cancel();
-                        }).Wait();
-                        Thread.Sleep(400);
-                        var slicedBoard = ia.SliceTitles(ia.CaptureScreen());
-                        var turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()),side);
-                        while (turn.start == -1 || turn.end == -1)
-                        {
-                            turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        }
-                        Thread.Sleep(400);
-                        turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        while (turn.start == -1 || turn.end == -1)
-                        {
-                            turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        }
-                        board.MakeTurn(turn, !side);
-                        log = turn.GetStr();
-                        File.AppendAllText(settings.LogPath, "[turn][enemy]: " + turn.GetStr() + Environment.NewLine);
-
-                    }
-                });
+                    form.Log(myTurn(side, board, ct, engine).GetStr());
+                    form.Log(enemyTurn(!side, board).GetStr());
+                }
             }
             else
             {
-                log = @"You are Black!";
-                var board = new Board();
-                Task.Run(() =>
+                form.Log(@"You are Black!");
+                while (!ct.Token.IsCancellationRequested)
                 {
-                    while (!CancelToken.IsCancellationRequested)
-                    {
-                        var slicedBoard = ia.SliceTitles(ia.CaptureScreen());
-                        var turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        while (!turn.valid)
-                        {
-                            Thread.Sleep(Settings.RefreshRate);
-                            turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        }
-                        Thread.Sleep(400);
-                        turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        while (turn.start == -1 || turn.end == -1)
-                        {
-                            turn = ia.AnalizingTurn(slicedBoard, ia.SliceTitles(ia.CaptureScreen()), side);
-                        }
-                        board.MakeTurn(turn.Inverse(), !side);
-                        log = turn.GetStr();
-                        File.AppendAllText(settings.LogPath, "[turn][enemy]: " + turn.GetStr() + Environment.NewLine);
-                        Task.Run(async () =>
-                        {
-                            var _turn = await engine.NextMove(board.GetTitles(), false);
-                            if (_turn.start != -2)
-                            {
-                                MadeMove(_turn.Inverse());
-                                _turn.Inverse();
-                                var transform = board.MakeTurn(_turn, side);
-                                if (!transform)
-                                {
-                                    MadeMove(new Turn(_turn.end, _turn.end));
-                                }
-                                File.AppendAllText(settings.LogPath, "[turn][me]: " + _turn.GetStr() + Environment.NewLine);
-                                log = _turn.GetStr();
-                            }
-                            else CancelToken.Cancel();
-                        }).Wait();
-                        Thread.Sleep(400);
-
-                    }
-                });
+                    form.Log(enemyTurn(!side, board).GetStr());
+                    form.Log(myTurn(side, board, ct, engine).GetStr());
+                }
             }
+            engine.Dispose();
         }
-        private void MadeMove(Turn turn)
+        private void MadeMove(int transformClick, bool side)
         {
-
-            MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumStart() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymStart() + settings.BoardSize.Height / 16);
+            MadeMove(new Turn(transformClick, transformClick, side), side);
+        }
+        private void MadeMove(Turn _turn, bool side)
+        {
+            var turn = _turn;
+            if (!side)
+                turn = _turn.Inverse();
             var HumanDelay = new Random();
-            Thread.Sleep(HumanDelay.Next(50, 250));
-            Thread.Sleep(HumanDelay.Next(50, 250));
-            if (HumanDelay.Next(1, 7) == 5)
-            {
-                Thread.Sleep(HumanDelay.Next(1000, 1500));
-            }
+            MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumStart() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymStart() + settings.BoardSize.Height / 16);
+            Thread.Sleep(HumanDelay.Next(settings.HumanBeingDelayMin, settings.HumanBeingDelayMax));
             MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumEnd() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymEnd() + settings.BoardSize.Height / 16);
+            Thread.Sleep(settings.AnimationDelay);
+        }
+
+        public void Dispose()
+        {
+            GC.Collect();
         }
     }
 }

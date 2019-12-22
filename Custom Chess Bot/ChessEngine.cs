@@ -3,28 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Custom_Chess_Bot
 {
-    class ChessEngine
+    class ChessEngine:IDisposable
     {
+        private static readonly Logger logger = new Logger();
         string turn;
         const string RANK_SEPARATOR = "/";
         private static readonly Settings settings = new Settings();
 
-        public static string getBetween(string strSource, string strStart, string strEnd)
+        public static string ExtractTurn(string strSource, string flag)
         {
-            int Start;//, End;
+            int Start;
             if (strSource == null)
             {
-                return "done";
+                return "terminated";
             }
-            if (strSource.Contains(strStart))// && strSource.Contains(strEnd))
+            if (strSource.Contains(flag))
             {
-                Start = strSource.IndexOf(strStart, 0) + strStart.Length;
- //               End = strSource.IndexOf(strEnd, Start);
+                Start = strSource.IndexOf(flag, 0) + flag.Length;
                 return strSource.Substring(Start);
             }
             else
@@ -72,46 +71,48 @@ namespace Custom_Chess_Bot
             }
             return fen;
         }
-        public async Task<Turn> NextMove(List<List<string>> board, bool side)
+        public Turn NextMove(List<List<string>> board, bool side)
         {
             string _side = " w";
             if (!side) _side = " b";
-            var _turn = new Turn(-1, -1);
-            File.AppendAllText(settings.LogPath, "[Search] position fen " + translateBoardToFEN(board) + _side + Environment.NewLine);
+    //        var _turn = new Turn(0, 0);
+            logger.Log(Logger.Search + Logger.Me, "position fen " + translateBoardToFEN(board) + _side);
             turn = "";
             SendLine("position fen " + translateBoardToFEN(board) + _side);
             SendLine("go movetime " + settings.MoveTime);
-            await Task.Run(() => {
-                while (turn == "")
-                {
-
-                }
-            });
-            if (turn == "done")
+            while (turn == "")
             {
-                return new Turn(-2, -2);
+
+            }
+            if (turn == "terminated")
+            {
+                return new Turn(false);
             }
             var _var = turn.ToCharArray();
-            for (var i = 0; i < settings.syms.Length; i++)
+            var startpoint = 0;
+            for (var i = 0; i < Settings.syms.Length; i++)
             {
-                if (settings.syms[i] == _var[0].ToString())
+                if (Settings.syms[i] == _var[0].ToString())
                 {
-                    _turn.start = 64 - 8 * Convert.ToInt32(_var[1].ToString()) + i;
+                    startpoint = Settings.BoardLenght*(Settings.BoardLenght - Convert.ToInt32(_var[1].ToString())) + i;
                     break;
                 }
             }
-            for (var i = 0; i < settings.syms.Length; i++)
+            var endpoint = 0;
+            for (var i = 0; i < Settings.syms.Length; i++)
             {
-                if (settings.syms[i] == _var[2].ToString())
+                if (Settings.syms[i] == _var[2].ToString())
                 {
-                    _turn.end = 64 - 8 * Convert.ToInt32(_var[3].ToString()) + i;
+                    endpoint = Settings.BoardLenght* (Settings.BoardLenght -  Convert.ToInt32(_var[3].ToString())) + i;
                     break;
                 }
             }
+            var _turn = new Turn(startpoint, endpoint, side);
+//            if (!side) _turn = _turn.Inverse();
             return _turn;
         }
         Process myProcess;
-        public ChessEngine()
+        public ChessEngine() 
         {
             ProcessStartInfo si = new ProcessStartInfo()
             {
@@ -123,8 +124,10 @@ namespace Custom_Chess_Bot
                 RedirectStandardOutput = true
             };
 
-            myProcess = new Process();
-            myProcess.StartInfo = si;
+            myProcess = new Process
+            {
+                StartInfo = si
+            };
             myProcess.OutputDataReceived += new DataReceivedEventHandler(myProcess_OutputDataReceived);
 
             myProcess.Start();
@@ -140,7 +143,13 @@ namespace Custom_Chess_Bot
 
         public void myProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            turn = getBetween(e.Data, "bestmove ", " ");
+            turn = ExtractTurn(e.Data, "bestmove ");
+        }
+
+        public void Dispose()
+        {
+            myProcess.Dispose();
+            GC.Collect();
         }
     }
 }

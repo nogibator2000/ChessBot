@@ -10,10 +10,9 @@ namespace Custom_Chess_Bot
 {
     class Settings
     {
-        public string SettingsPath = @"Settings.txt";
-        public readonly string[] syms = { "a", "b", "c", "d", "e", "f", "g", "h" };
-        public string LogPath = @"log.txt";
-        public const int RefreshRate = 250;
+        public static string SettingsPath = @"Settings.txt";
+        public static readonly string[] syms = { "a", "b", "c", "d", "e", "f", "g", "h" };
+        public static string LogPath = @"log.txt";
         public const int BoardLenght = 8;
         public int hash;
         public int MoveTime;
@@ -25,10 +24,12 @@ namespace Custom_Chess_Bot
         public int NeutralColor, Color1, Color2, Color3, Color4;
         public bool FilterEnable;
         public int AnimationDelay;
+        public int RefreshRate;
         public int HumanBeingDelayMin;
         public int HumanBeingDelayMax;
         public float WhiteFilter;
         public float BlackFilter;
+        public bool LogEnable;
         public void Save()
         {
             var settings =
@@ -48,10 +49,12 @@ namespace Custom_Chess_Bot
             Color4.ToString() + Environment.NewLine +
             FilterEnable.ToString() + Environment.NewLine +
             AnimationDelay.ToString() + Environment.NewLine +
+            RefreshRate.ToString() + Environment.NewLine +
             HumanBeingDelayMin.ToString() + Environment.NewLine +
             HumanBeingDelayMax.ToString() + Environment.NewLine +
             WhiteFilter.ToString() + Environment.NewLine +
-            BlackFilter.ToString();
+            BlackFilter.ToString() + Environment.NewLine+
+            LogEnable.ToString();
             File.WriteAllText(SettingsPath, settings);
         }
         private void Load()
@@ -74,10 +77,12 @@ namespace Custom_Chess_Bot
                 Color4 = Convert.ToInt32(settings[13]);
                 FilterEnable = Convert.ToBoolean(settings[14]);
                 AnimationDelay = Convert.ToInt32(settings[15]);
-                HumanBeingDelayMin = Convert.ToInt32(settings[16]);
-                HumanBeingDelayMax = Convert.ToInt32(settings[17]);
-                WhiteFilter = Convert.ToSingle(settings[18]);
-                BlackFilter = Convert.ToSingle(settings[19]);
+                RefreshRate = Convert.ToInt32(settings[16]);
+                HumanBeingDelayMin = Convert.ToInt32(settings[17]);
+                HumanBeingDelayMax = Convert.ToInt32(settings[18]);
+                WhiteFilter = Convert.ToSingle(settings[19]);
+                BlackFilter = Convert.ToSingle(settings[20]);
+                LogEnable = Convert.ToBoolean(settings[21]);
             }
             catch
             {
@@ -103,10 +108,12 @@ namespace Custom_Chess_Bot
             Color4 = Color.FromArgb(238, 238, 210).ToArgb();
             FilterEnable = true;
             AnimationDelay = 600;
+            RefreshRate = 250;
             HumanBeingDelayMin = 50;
             HumanBeingDelayMax = 350;
             WhiteFilter = 0.75f;
             BlackFilter = 0.45f;
+            LogEnable = true;
         }
         public Settings()
         {

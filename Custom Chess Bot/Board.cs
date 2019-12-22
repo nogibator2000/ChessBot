@@ -77,10 +77,41 @@ namespace Custom_Chess_Bot
             titles[63 - 14] = -6;
             titles[63 - 15] = -6;
         }
+        public void MakeOO(bool side, bool isShort)
+        {
+            if (side || !isShort)
+            {
+                titles[60] = 0;
+                titles[61] = -1;
+                titles[62] = -5;
+                titles[63] = 0;
+            }else if (!side || !isShort)
+            {
+                titles[4] = 0;
+                titles[5] = 1;
+                titles[6] = 5;
+                titles[7] = 0;
+            }else if (side || isShort)
+            {
+                titles[60] = 0;
+                titles[59] = -1;
+                titles[58] = -5;
+                titles[56] = 0;
+            } else if (!side || isShort)
+            {
+                titles[4] = 0;
+                titles[3] = 1;
+                titles[2] = 5;
+                titles[0] = 0;
+            }
+        }
         public bool MakeTurn(Turn turn, bool side)
         {
-            if (turn.start < 0 || turn.start > 63 || turn.end < 0 || turn.end > 63)
-                throw new ArgumentException("-1 turn");
+            if (turn.oo || turn.ooo)
+            {
+                MakeOO(side, turn.oo);
+                return true;
+            }
             if ((titles[turn.start] > 0 && !side && titles[turn.end] <= 0) ||
                 (titles[turn.start] < 0 && side && titles[turn.end] >= 0))
             {
@@ -96,25 +127,6 @@ namespace Custom_Chess_Bot
                     }
                     titles[turn.start] = 0;
                     return false;
-                }
-                if ((titles[turn.start] == 5 || titles[turn.start] == -5) && (turn.start - turn.end == 2 || turn.start - turn.end == -2))
-                {
-                    switch (turn.end)
-                    {
-                        case 2:
-                            MakeTurn(new Turn(0, 3), false);
-                            break;
-                        case 6:
-                            MakeTurn(new Turn(7, 5), false);
-                            break;
-                        case 62:
-                            MakeTurn(new Turn(63, 61), true);
-                            break;
-                        case 58:
-                            MakeTurn(new Turn(56, 59), true);
-                            break;
-
-                    }
                 }
                 titles[turn.end] = titles[turn.start];
                 titles[turn.start] = 0;
@@ -135,25 +147,6 @@ namespace Custom_Chess_Bot
                     }
                     titles[turn.end] = 0;
                     return false;
-                }
-                if ((titles[turn.end] == 5 || titles[turn.end] == -5) && (turn.start - turn.end == 2 || turn.start - turn.end == -2))
-                {
-                    switch (turn.start)
-                    {
-                        case 2:
-                            MakeTurn(new Turn(0, 3), false);
-                            break;
-                        case 6:
-                            MakeTurn(new Turn(7, 5), false);
-                            break;
-                        case 62:
-                            MakeTurn(new Turn(63, 61), true);
-                            break;
-                        case 58:
-                            MakeTurn(new Turn(56, 59), true);
-                            break;
-
-                    }
                 }
                 titles[turn.start] = titles[turn.end];
                 titles[turn.end] = 0;
