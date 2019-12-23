@@ -11,7 +11,6 @@ namespace Custom_Chess_Bot
     {
         private static readonly Logger logger = new Logger();
         string turn;
-        const string RANK_SEPARATOR = "/";
         private static readonly Settings settings = new Settings();
 
         public static string ExtractTurn(string strSource, string flag)
@@ -32,53 +31,11 @@ namespace Custom_Chess_Bot
             }
         }
 
-        public string translateBoardToFEN(List<List<string>> board)
+        public Turn NextMove(Board board, bool side)
         {
-            string fen = "";
-            for (int rank = 0; rank < board.Count(); rank++)
-            {
-                int empty = 0;
-                string rankFen = "";
-                for (int file = 0; file < board[rank].Count(); file++)
-                {
-                    if (board[rank][file] == "")
-                    {
-                        empty++;
-                    }
-                    else
-                    {
-                        // add the number to the fen if not zero.
-                        if (empty != 0) rankFen += empty;
-                        // add the letter to the fen
-                        rankFen += board[rank][file];
-                        // reset the empty
-                        empty = 0;
-                    }
-                }
-                // add the number to the fen if not zero.
-                if (empty != 0) rankFen += empty;
-                // add the rank to the fen
-                fen += rankFen;
-                // add rank separator. If last then add a space
-                if (!(rank == board.Count() - 1))
-                {
-                    fen += RANK_SEPARATOR;
-                }
-                else
-                {
-                    fen += " ";
-                }
-            }
-            return fen;
-        }
-        public Turn NextMove(List<List<string>> board, bool side)
-        {
-            string _side = " w";
-            if (!side) _side = " b";
-    //        var _turn = new Turn(0, 0);
-            logger.Log(Logger.Search + Logger.Me, "position fen " + translateBoardToFEN(board) + _side);
+            logger.Log(Logger.Search + Logger.Me, "position fen " + board.translateBoardToFEN(side));
             turn = "";
-            SendLine("position fen " + translateBoardToFEN(board) + _side);
+            SendLine("position fen " + board.translateBoardToFEN(side));
             SendLine("go movetime " + settings.MoveTime);
             while (turn == "")
             {
@@ -116,7 +73,7 @@ namespace Custom_Chess_Bot
         {
             ProcessStartInfo si = new ProcessStartInfo()
             {
-                FileName = settings.uciPath,
+                FileName = settings.EnginePath,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,

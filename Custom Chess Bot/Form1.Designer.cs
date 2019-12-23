@@ -38,11 +38,12 @@ namespace Custom_Chess_Bot
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(351, 250);
+            this.button1.Location = new System.Drawing.Point(351, 205);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 45);
             this.button1.TabIndex = 0;
@@ -50,9 +51,19 @@ namespace Custom_Chess_Bot
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(351, 255);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(75, 45);
+            this.button6.TabIndex = 0;
+            this.button6.Text = "Settings";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.Button6_Click);
+            // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(351, 200);
+            this.button4.Location = new System.Drawing.Point(351, 155);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(75, 45);
             this.button4.TabIndex = 0;
@@ -71,7 +82,7 @@ namespace Custom_Chess_Bot
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(351, 25);
+            this.button2.Location = new System.Drawing.Point(351, 5);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 47);
             this.button2.TabIndex = 5;
@@ -87,11 +98,11 @@ namespace Custom_Chess_Bot
             this.log.Name = "log";
             this.log.Size = new System.Drawing.Size(194, 36);
             this.log.TabIndex = 6;
-            this.log.Text = "Calibrate board!";
+            this.log.Text = "";
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(351, 150);
+            this.button3.Location = new System.Drawing.Point(351, 105);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 42);
             this.button3.TabIndex = 7;
@@ -101,7 +112,7 @@ namespace Custom_Chess_Bot
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(351, 75);
+            this.button5.Location = new System.Drawing.Point(351, 55);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(75, 42);
             this.button5.TabIndex = 7;
@@ -121,6 +132,7 @@ namespace Custom_Chess_Bot
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button5);
+            this.Controls.Add(this.button6);
             this.Name = "Form1";
             this.Text = "Form1";
             this.TopMost = true;
@@ -138,6 +150,7 @@ namespace Custom_Chess_Bot
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
     }
 }
 

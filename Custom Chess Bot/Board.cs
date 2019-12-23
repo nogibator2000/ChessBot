@@ -10,6 +10,64 @@ namespace Custom_Chess_Bot
     {
 
         private readonly int[] titles;
+        public bool WhiteOO;
+        public bool WhiteOOO;
+        public bool BlackOO;
+        public bool BlackOOO;
+        const string RANK_SEPARATOR = "/";
+
+        public string translateBoardToFEN(bool side)
+        {
+            string _side = " w";
+            if (!side) _side = " b";
+            var board = GetTitles();
+            string fen = "";
+            for (int rank = 0; rank < board.Count(); rank++)
+            {
+                int empty = 0;
+                string rankFen = "";
+                for (int file = 0; file < board[rank].Count(); file++)
+                {
+                    if (board[rank][file] == "")
+                    {
+                        empty++;
+                    }
+                    else
+                    {
+                        // add the number to the fen if not zero.
+                        if (empty != 0) rankFen += empty;
+                        // add the letter to the fen
+                        rankFen += board[rank][file];
+                        // reset the empty
+                        empty = 0;
+                    }
+                }
+                // add the number to the fen if not zero.
+                if (empty != 0) rankFen += empty;
+                // add the rank to the fen
+                fen += rankFen;
+                // add rank separator. If last then add a space
+                if (!(rank == board.Count() - 1))
+                {
+                    fen += RANK_SEPARATOR;
+                }
+                else
+                {
+                    fen += " ";
+                }
+            }
+            var o = " ";
+            if (WhiteOO)
+                o += "K";
+            if (WhiteOOO)
+                o += "Q";
+            if (BlackOO)
+                o += "k";
+            if (BlackOOO)
+                o += "q";
+            return fen +_side+o;
+        }
+
         public List<List<string>> GetTitles()
         {
             var _var = new List<List<string>>();
@@ -43,6 +101,10 @@ namespace Custom_Chess_Bot
         }
         public Board()
         {
+            WhiteOO = true;
+            WhiteOOO = true;
+            BlackOO = true;
+            BlackOOO = true;
             titles = new int[64];
             titles[0] = 1;
             titles[7] = 1;
@@ -77,28 +139,36 @@ namespace Custom_Chess_Bot
             titles[63 - 14] = -6;
             titles[63 - 15] = -6;
         }
-        public void MakeOO(bool side, bool isShort)
+        public void MakeOO(Turn turn)
         {
-            if (side || !isShort)
+            if (turn.side && turn.oo)
             {
+                WhiteOO = false;
+                WhiteOOO = false;
                 titles[60] = 0;
                 titles[61] = -1;
                 titles[62] = -5;
                 titles[63] = 0;
-            }else if (!side || !isShort)
+            }else if (!turn.side && turn.oo)
             {
+                BlackOO = false;
+                BlackOOO = false;
                 titles[4] = 0;
                 titles[5] = 1;
                 titles[6] = 5;
                 titles[7] = 0;
-            }else if (side || isShort)
+            }else if (turn.side && turn.ooo)
             {
+                WhiteOO = false;
+                WhiteOOO = false;
                 titles[60] = 0;
                 titles[59] = -1;
                 titles[58] = -5;
                 titles[56] = 0;
-            } else if (!side || isShort)
+            } else if (!turn.side && turn.ooo)
             {
+                BlackOO = false;
+                BlackOOO = false;
                 titles[4] = 0;
                 titles[3] = 1;
                 titles[2] = 5;
@@ -109,8 +179,57 @@ namespace Custom_Chess_Bot
         {
             if (turn.oo || turn.ooo)
             {
-                MakeOO(side, turn.oo);
+                MakeOO(turn);
                 return true;
+            }
+            if ((WhiteOO || WhiteOOO) && (turn.start == 60 || turn.end == 60))
+            {
+                WhiteOO = false;
+                WhiteOOO = false;
+            }
+            if ((BlackOO || BlackOOO) && (turn.start == 4 || turn.end == 4))
+            {
+                BlackOO = false;
+                BlackOOO = false;
+            }
+            if ((BlackOO) && (turn.start == 7 || turn.end == 7))
+            {
+                BlackOO = false;
+            }
+            if ((BlackOOO) && (turn.start == 0 || turn.end == 0))
+            {
+                BlackOOO = false;
+            }
+            if ((WhiteOO) && (turn.start == 63 || turn.end == 63))
+            {
+                WhiteOO = false;
+            }
+            if ((WhiteOOO) && (turn.start == 56 || turn.end == 56))
+            {
+                WhiteOOO = false;
+            }
+            if (titles[turn.start] == 5|| titles[turn.start]==-5|| titles[turn.end] == 5 || titles[turn.end] == -5)
+            {
+                if ((turn.start == 60 && turn.end == 58) || (turn.start == 58 && turn.end == 60))
+                {
+                    MakeOO(new Turn(false, true));
+                    return true;
+                }
+                if ((turn.start == 60 && turn.end == 62) || (turn.start == 62 && turn.end == 60))
+                {
+                    MakeOO(new Turn(true, true));
+                    return true;
+                }
+                if ((turn.start == 4 && turn.end == 6) || (turn.start == 6 && turn.end == 4))
+                {
+                    MakeOO(new Turn(true, false));
+                    return true;
+                }
+                if ((turn.start == 4 && turn.end == 2) || (turn.start == 2 && turn.end == 4))
+                {
+                    MakeOO(new Turn(false, false));
+                    return true;
+                }
             }
             if ((titles[turn.start] > 0 && !side && titles[turn.end] <= 0) ||
                 (titles[turn.start] < 0 && side && titles[turn.end] >= 0))

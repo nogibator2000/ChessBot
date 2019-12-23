@@ -12,7 +12,7 @@ namespace Custom_Chess_Bot
     static class ImageAnalysis
     {
         private static readonly Logger logger = new Logger();
-        private static readonly Settings settings = new Settings();
+        public static Settings settings = new Settings();
         public static List<Bitmap> SliceTitles(Bitmap board)
         {
             var titles = new List<Bitmap>(Settings.BoardLenght * Settings.BoardLenght);
@@ -44,7 +44,7 @@ namespace Custom_Chess_Bot
                 var imageHash1 = GetImageHash(board1[i]);
                 var imageHash2 = GetImageHash(board2[i]);
                 int equalElements = imageHash1.Zip(imageHash2, (k, j) => k == j).Count(eq => eq);
-                var treshold = settings.threshold * settings.hash * settings.hash * (1 - 2 * settings.window) * (1 - 2 * settings.window);
+                var treshold = settings.Threshold * settings.Hash * settings.Hash * (1 - 2 * settings.Window) * (1 - 2 * settings.Window);
                 if (equalElements != imageHash1.Count() || equalElements != imageHash2.Count())
                 {
                     logger.Log(Logger.ML + Logger.Processing, "[equal]" + equalElements + "[tres]" + treshold + "[cell]" + i);
@@ -81,47 +81,35 @@ namespace Custom_Chess_Bot
         }
         private static Turn MoveOO(bool side, List<int> candidates)
         {
-            var counter = 0;
+            var score = 0;
             for (var i = 0; i < candidates.Count(); i++)
             {
-                if (side && (candidates[i] == 3 || candidates[i] == 2 || candidates[i] == 0 || candidates[i] == 4))
+                if (!side && (candidates[i] == 3 || candidates[i] == 2 || candidates[i] == 0 || candidates[i] == 4))
                 {
-                    counter += 2;
+                    score += 2;
                 }
-                else if (side && (candidates[i] == 5 || candidates[i] == 6 || candidates[i] == 7 || candidates[i] == 4))
+                else if (!side && (candidates[i] == 5 || candidates[i] == 6 || candidates[i] == 7))
                 {
-                    counter += 1;
+                    score += 1;
                 }
-                else if (!side && (candidates[i] == 3 || candidates[i] == 4 || candidates[i] == 5 || candidates[i] == 7))
+                else if (side && (candidates[i] == 3 || candidates[i] == 4 || candidates[i] == 5 || candidates[i] == 7))
                 {
-                    counter -= 2;
+                    score -= 2;
                 }
-                else if (!side && (candidates[i] == 0 || candidates[i] == 1 || candidates[i] == 2 || candidates[i] == 3))
+                else if (side && (candidates[i] == 0 || candidates[i] == 1 || candidates[i] == 2))
                 {
-                    counter -= 1;
+                    score -= 1;
                 }
             }
-            if (counter < -7)
+            if (score < -7|| score > 7)
             {
-                var turn = new Turn(true, false);
+                var turn = new Turn(false, side);
                 logger.Log(Logger.ML + Logger.FoundTurn, turn.GetStr());
                 return turn;
-            }
-            if (counter > 7)
+            } else
+            if (score < -4|| score > 4)
             {
-                var turn = new Turn(true, true);
-                logger.Log(Logger.ML + Logger.FoundTurn, turn.GetStr());
-                return turn;
-            }
-            if (counter < -4)
-            {
-                var turn = new Turn(false, false);
-                logger.Log(Logger.ML + Logger.FoundTurn, turn.GetStr());
-                return turn;
-            }
-            if (counter > 4)
-            {
-                var turn = new Turn(false, true);
+                var turn = new Turn(true, side);
                 logger.Log(Logger.ML + Logger.FoundTurn, turn.GetStr());
                 return turn;
             }
@@ -146,10 +134,10 @@ namespace Custom_Chess_Bot
         public static List<int> GetImageHash(Bitmap bmp)
         {
             var lResult = new List<int>();
-            Bitmap bmpMin = new Bitmap(bmp, new Size(settings.hash, settings.hash));
-            for (var j = Convert.ToInt32(bmpMin.Height*settings.window); j < bmpMin.Height*(1-settings.window); j++)
+            Bitmap bmpMin = new Bitmap(bmp, new Size(settings.Hash, settings.Hash));
+            for (var j = Convert.ToInt32(bmpMin.Height*settings.Window); j < bmpMin.Height*(1-settings.Window); j++)
             {
-                for (var i = 0 + Convert.ToInt32(bmpMin.Width * settings.window); i < bmpMin.Width*(1-settings.window); i++)
+                for (var i = 0 + Convert.ToInt32(bmpMin.Width * settings.Window); i < bmpMin.Width*(1-settings.Window); i++)
                 {
                     var pixelBright = bmpMin.GetPixel(i, j).GetBrightness();
                     if (pixelBright > settings.WhiteFilter)

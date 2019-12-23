@@ -3,13 +3,15 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Custom_Chess_Bot
 {
     public partial class Form1 : Form
     {
+        private bool isRunning = false;
         private static CancellationTokenSource ct;
-        readonly Settings settings = new Settings();
+        private Settings settings = new Settings();
         private GlobalKeyboardHook _globalKeyboardHook;
         private static readonly Logger logger = new Logger();
         private static CancellationTokenSource cts;
@@ -25,6 +27,7 @@ namespace Custom_Chess_Bot
         {
             SetupKeyboardHooks();
             InitializeComponent();
+            Log("Ready!");
         }
         private void KeyPressHandler(object sender, GlobalKeyboardHookEventArgs e)
         {
@@ -54,13 +57,12 @@ namespace Custom_Chess_Bot
             }
 
         }
-
-        private async void Button1_Click(object sender, EventArgs e)
+        private void Reload()
         {
-            var firstPosition = await GetMousePosition();
-            log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
+            ImageAnalysis.settings = new Settings();
+            settings = new Settings();
         }
-        private async void Button5_Click(object sender, EventArgs e)
+        private async void Button1_Click(object sender, EventArgs e)
         {
             var firstPosition = await GetMousePosition();
             log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
@@ -71,6 +73,19 @@ namespace Custom_Chess_Bot
             {
                 ct.Cancel();
             }
+        }
+        private void Button6_Click(object sender, EventArgs e)
+        {
+            var process = new Process();
+            process.StartInfo = new ProcessStartInfo()
+            {
+                UseShellExecute = true,
+                FileName = Settings.SettingsPath
+            };
+
+            process.Start();
+            process.WaitForExit();
+            Reload();
         }
         private async Task<Point> GetMousePosition()
         {
@@ -92,6 +107,7 @@ namespace Custom_Chess_Bot
             var BoardSize = new Size(secondPosition.X - firstPosition.X, secondPosition.Y - firstPosition.Y);
             settings.CalibrateBoard(BoardSize, firstPosition);
             log.Text = @"Saved!";
+            Reload();
         }
         public void Log(string _log)
         {
@@ -132,20 +148,26 @@ namespace Custom_Chess_Bot
         }
         private void button3_Click(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            if (!isRunning)
             {
-                if (ct != null)
-                {
-                    ct.Cancel();
-                }
-                ct = new CancellationTokenSource();
+                isRunning = true;
                 Task.Run(() =>
-                 {
-                     logger.Log(Logger.SpawnThread, "Play");
-                     var pe = new PlayEngine(ct, this);
-                     pe.Dispose();
-                 });
-            });
+                {
+                    if (ct != null)
+                    {
+                        ct.Cancel();
+                    }
+                    ct = new CancellationTokenSource();
+                    Task.Run(() =>
+                     {
+                         logger.Log(Logger.SpawnThread, "Play");
+                         var pe = new PlayEngine(ct, this);
+                         pe.Dispose();
+                     }).Wait();
+                    Log("Complited");
+                    isRunning = false;
+                });
+            }
         }
     }
 }
