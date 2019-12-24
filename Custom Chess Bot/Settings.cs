@@ -10,6 +10,8 @@ namespace Custom_Chess_Bot
 {
     class Settings
     {
+        public int AnimationHash;
+        public const int AnimationWindow = 0;
         public static string SettingsPath = @"Settings.txt";
         public static readonly string[] syms = { "a", "b", "c", "d", "e", "f", "g", "h" };
         public static string LogPath = @"Logs.txt";
@@ -30,6 +32,7 @@ namespace Custom_Chess_Bot
         public float WhiteFilter;
         public float BlackFilter;
         public bool LogEnable;
+        public int MissplayEveryXTurns;
         public void Save()
         {
             var settings =
@@ -53,8 +56,10 @@ namespace Custom_Chess_Bot
             "HumanBeingDelayMin|" + HumanBeingDelayMin.ToString() + Environment.NewLine +
             "HumanBeingDelayMax|" + HumanBeingDelayMax.ToString() + Environment.NewLine +
             "WhiteFilter|" + WhiteFilter.ToString() + Environment.NewLine +
-            "BlackFilter|" + BlackFilter.ToString() + Environment.NewLine+
-            "LogEnable|" + LogEnable.ToString();
+            "BlackFilter|" + BlackFilter.ToString() + Environment.NewLine +
+            "LogEnable|" + LogEnable.ToString() + Environment.NewLine +
+            "AnimationHash|" + AnimationHash.ToString() + Environment.NewLine +
+            "MissplayEveryXTurns|" + MissplayEveryXTurns.ToString();
             File.WriteAllText(SettingsPath, settings);
         }
         private void Load()
@@ -83,6 +88,8 @@ namespace Custom_Chess_Bot
                 WhiteFilter = Convert.ToSingle(settings[19].Split("|")[1]);
                 BlackFilter = Convert.ToSingle(settings[20].Split("|")[1]);
                 LogEnable = Convert.ToBoolean(settings[21].Split("|")[1]);
+                AnimationHash = Convert.ToInt32(settings[22].Split("|")[1]);
+                MissplayEveryXTurns = Convert.ToInt32(settings[23].Split("|")[1]);
             }
             catch
             {
@@ -97,7 +104,7 @@ namespace Custom_Chess_Bot
             BoardPosition.X = 229;
             BoardPosition.Y = 170;
             Hash = 32;
-            MoveTime = 1200;
+            MoveTime = 250;
             Window = 0.2f;
             Threshold = 0.9f;
             EnginePath = @"C:\Users\nogib\Downloads\stockfish-10-win\stockfish-10-win\Windows\stockfish_10_x64.exe";
@@ -107,13 +114,15 @@ namespace Custom_Chess_Bot
             Color3 = Color.FromArgb(246, 246, 130).ToArgb();
             Color4 = Color.FromArgb(238, 238, 210).ToArgb();
             FilterEnable = false;
-            AnimationDelay = 240;
+            AnimationDelay = 30;
             RefreshRate = 100;
-            HumanBeingDelayMin = 10;
-            HumanBeingDelayMax = 2000;
+            HumanBeingDelayMin = 1;
+            HumanBeingDelayMax = 1400;
             WhiteFilter = 0.9f;
             BlackFilter = 0.35f;
             LogEnable = true;
+            AnimationHash = 200;
+            MissplayEveryXTurns = 2;
         }
         public Settings()
         {

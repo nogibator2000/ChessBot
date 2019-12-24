@@ -41,8 +41,8 @@ namespace Custom_Chess_Bot
             var candidates = new List<int>();
             for (var i = 0; i < board1.Count; i++)
             {
-                var imageHash1 = GetImageHash(board1[i]);
-                var imageHash2 = GetImageHash(board2[i]);
+                var imageHash1 = GetImageHash(board1[i], settings.Hash, settings.Window);
+                var imageHash2 = GetImageHash(board2[i], settings.Hash, settings.Window);
                 int equalElements = imageHash1.Zip(imageHash2, (k, j) => k == j).Count(eq => eq);
                 var treshold = settings.Threshold * settings.Hash * settings.Hash * (1 - 2 * settings.Window) * (1 - 2 * settings.Window);
                 if (equalElements != imageHash1.Count() || equalElements != imageHash2.Count())
@@ -131,13 +131,13 @@ namespace Custom_Chess_Bot
             }
             return lockedBitmap;
         }
-        public static List<int> GetImageHash(Bitmap bmp)
+        public static List<int> GetImageHash(Bitmap bmp, int Hash, float Window)
         {
             var lResult = new List<int>();
-            Bitmap bmpMin = new Bitmap(bmp, new Size(settings.Hash, settings.Hash));
-            for (var j = Convert.ToInt32(bmpMin.Height*settings.Window); j < bmpMin.Height*(1-settings.Window); j++)
+            Bitmap bmpMin = new Bitmap(bmp, new Size(Hash, Hash));
+            for (var j = Convert.ToInt32(bmpMin.Height*Window); j < bmpMin.Height*(1-Window); j++)
             {
-                for (var i = 0 + Convert.ToInt32(bmpMin.Width * settings.Window); i < bmpMin.Width*(1-settings.Window); i++)
+                for (var i = 0 + Convert.ToInt32(bmpMin.Width * Window); i < bmpMin.Width*(1-Window); i++)
                 {
                     var pixelBright = bmpMin.GetPixel(i, j).GetBrightness();
                     if (pixelBright > settings.WhiteFilter)

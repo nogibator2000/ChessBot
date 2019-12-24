@@ -153,10 +153,6 @@ namespace Custom_Chess_Bot
                 isRunning = true;
                 Task.Run(() =>
                 {
-                    if (ct != null)
-                    {
-                        ct.Cancel();
-                    }
                     ct = new CancellationTokenSource();
                     Task.Run(() =>
                      {
@@ -164,7 +160,7 @@ namespace Custom_Chess_Bot
                          var pe = new PlayEngine(ct, this);
                          pe.Dispose();
                      }).Wait();
-                    Log("Complited");
+                    Log("Completed");
                     isRunning = false;
                 });
             }

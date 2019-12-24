@@ -34,15 +34,31 @@ namespace Custom_Chess_Bot
             Thread.Sleep(10);
             mouse_event(MOUSEEVENTF_LEFTUP, (uint)X, (uint)Y, 0, 0);
         }
+        private List<Bitmap> GetBoardAfterAnimation(CancellationTokenSource ct)
+        {
+            Bitmap candidate1, candidate2;
+            while(!ct.IsCancellationRequested)
+            {
+                candidate1 = ImageAnalysis.CaptureScreen();
+                Thread.Sleep(settings.AnimationDelay);
+                candidate2 = ImageAnalysis.CaptureScreen();
+                var c1h = ImageAnalysis.GetImageHash(candidate1, settings.AnimationHash, Settings.AnimationWindow);
+                var c2h = ImageAnalysis.GetImageHash(candidate2, settings.AnimationHash, Settings.AnimationWindow);
+                int equalElements = c1h.Zip(c2h, (k, j) => k == j).Count(eq => eq);
+                if (equalElements>=40000)
+                    return ImageAnalysis.SliceTitles(candidate1);
+            }
+            return new List<Bitmap>();
+        }
         public Turn findEnemyTurn(bool side, CancellationTokenSource ct)
         {
             Turn turn;
-            var slicedBoard = ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen());
+            var slicedBoard = GetBoardAfterAnimation(ct);
             do
             {
                 Thread.Sleep(settings.RefreshRate);
                 turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
-                if (turn.valid)
+                if (turn.valid && !ct.IsCancellationRequested)
                 {
                     Thread.Sleep(settings.RefreshRate);
                     turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
@@ -111,7 +127,6 @@ namespace Custom_Chess_Bot
             if (HumanDelay.Next(0, 9) == 0)
                 Thread.Sleep(HumanDelay.Next(Convert.ToInt32(settings.HumanBeingDelayMin * 3), Convert.ToInt32(settings.HumanBeingDelayMax * 3)));
             MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumEnd() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymEnd() + settings.BoardSize.Height / 16);
-            Thread.Sleep(settings.AnimationDelay);
         }
 
         public void Dispose()

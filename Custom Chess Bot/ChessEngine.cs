@@ -36,6 +36,16 @@ namespace Custom_Chess_Bot
             logger.Log(Logger.Search + Logger.Me, "position fen " + board.translateBoardToFEN(side));
             turn = "";
             SendLine("position fen " + board.translateBoardToFEN(side));
+            var rand = new Random();
+            var MissPlayCheck = rand.Next(1, settings.MissplayEveryXTurns+1);
+            if (MissPlayCheck == settings.MissplayEveryXTurns)
+            {
+                SendLine("setoption name Skill Level value 1");
+            }
+            else
+            {
+                SendLine("setoption name Skill Level value 20");
+            }
             SendLine("go movetime " + settings.MoveTime);
             while (turn == "")
             {
