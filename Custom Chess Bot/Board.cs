@@ -15,7 +15,7 @@ namespace Custom_Chess_Bot
         public bool BlackOO;
         public bool BlackOOO;
         const string RANK_SEPARATOR = "/";
-
+        public string moves = "";
         public string translateBoardToFEN(bool side)
         {
             string _side = " w";
@@ -179,6 +179,7 @@ namespace Custom_Chess_Bot
         {
             if (turn.oo || turn.ooo)
             {
+                moves += turn.GetStr() + " ";
                 MakeOO(turn);
                 return true;
             }
@@ -245,8 +246,10 @@ namespace Custom_Chess_Bot
                         titles[turn.end] = -4;
                     }
                     titles[turn.start] = 0;
+                    moves += turn.GetStr() + "q ";
                     return false;
                 }
+                moves += turn.GetStr()+" ";
                 titles[turn.end] = titles[turn.start];
                 titles[turn.start] = 0;
                 return true;
@@ -265,8 +268,10 @@ namespace Custom_Chess_Bot
                         titles[turn.start] = -4;
                     }
                     titles[turn.end] = 0;
+                    moves += turn.transform().GetStr() + "q ";
                     return false;
                 }
+                moves += turn.transform().GetStr() + " ";
                 titles[turn.start] = titles[turn.end];
                 titles[turn.end] = 0;
                 return true;

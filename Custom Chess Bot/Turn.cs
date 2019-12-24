@@ -4,6 +4,10 @@ namespace Custom_Chess_Bot
 {
     class Turn
     {
+        public Turn transform()
+        {
+            return new Turn(end, start, side);
+        }
         private readonly static Settings settings = new Settings();
         public Turn(bool _valid)
         {
@@ -64,16 +68,17 @@ namespace Custom_Chess_Bot
         }
         public string GetStr()
         {
-            var strSide = "-white";
-            if (!side)
-                strSide = "-black";
             if (valid)
             {
-                if (oo)
-                    return "O-O" + strSide;
-                if (ooo)
-                    return "O-O-O" + strSide;
-                return Settings.syms[GetNumStart()] + (8 - GetSymStart()) + "-" + Settings.syms[GetNumEnd()] + (8 - GetSymEnd()+strSide);
+                if (oo && side)
+                    return "e1c1";
+                if (ooo && side)
+                    return "e1g1";
+                if (oo && !side)
+                    return "e8g8";
+                if (ooo && !side)
+                    return "e8c8";
+                return Settings.syms[GetNumStart()] + (8 - GetSymStart()) + Settings.syms[GetNumEnd()] + (8 - GetSymEnd());
             }
             return "Not valid.";
         }
