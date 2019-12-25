@@ -141,6 +141,7 @@ namespace Custom_Chess_Bot
         }
         public void MakeOO(Turn turn)
         {
+            moves += turn.GetStr() + " ";
             if (turn.side && turn.oo)
             {
                 WhiteOO = false;
@@ -179,7 +180,6 @@ namespace Custom_Chess_Bot
         {
             if (turn.oo || turn.ooo)
             {
-                moves += turn.GetStr() + " ";
                 MakeOO(turn);
                 return true;
             }

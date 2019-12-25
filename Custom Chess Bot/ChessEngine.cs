@@ -33,7 +33,8 @@ namespace Custom_Chess_Bot
 
         public Turn NextMove(Board board, bool side)
         {
-            logger.Log(Logger.Search + Logger.Me, "position fen " + board.translateBoardToFEN(side));
+//            logger.Log(Logger.Search + Logger.Me, "position fen " + board.translateBoardToFEN(side));
+            logger.Log(Logger.Search + Logger.Me, "position startpos moves " + board.moves);
             turn = "";
             //            SendLine("position fen " + board.translateBoardToFEN(side));
             SendLine("position startpos moves " + board.moves);
