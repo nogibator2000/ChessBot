@@ -70,9 +70,9 @@ namespace Custom_Chess_Bot
         {
             if (valid)
             {
-                if (oo && side)
-                    return "e1c1";
                 if (ooo && side)
+                    return "e1c1";
+                if (oo && side)
                     return "e1g1";
                 if (oo && !side)
                     return "e8g8";
