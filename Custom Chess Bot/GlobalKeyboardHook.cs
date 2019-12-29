@@ -175,6 +175,7 @@ namespace Custom_Chess_Bot
         public const int VkSnapshot = 0x2c;
         public const int F2 = 0x71;
         public const int F4 = 0x73;
+        public const int F7 = 0x76;
         //const int VkLwin = 0x5b;
         //const int VkRwin = 0x5c;
         //const int VkTab = 0x09;

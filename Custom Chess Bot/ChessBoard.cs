@@ -18,7 +18,7 @@ namespace Custom_Chess_Bot
         private enum FenSpliter : int { fen, side, oo, idkwtf, halfTurn, turn }
         private List<List<string>> Cells;
         private string Moves;
-        private Side SideToMove;
+        public Side SideToMove;
         private string IDKWTF;
         private int HalfTurns;
         private int Turns;

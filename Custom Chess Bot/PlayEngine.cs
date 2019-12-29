@@ -17,6 +17,7 @@ namespace Custom_Chess_Bot
         SettingsStore Settings;
         ChessEngine Engine;
         Controller AI;
+        bool CustomGame;
         private const int DefaultSkill = 20;
         private const int RetardedSkill = 1;
         public PlayEngine(string str=null)
@@ -24,10 +25,12 @@ namespace Custom_Chess_Bot
             if (str != null)
             {
                 Board = new ChessBoard(str);
+                CustomGame = true;
             }
             else
             {
                 Board = new ChessBoard();
+                CustomGame = false;
             }
             Settings = new SettingsStore();
             Log = new LogWriter(Settings);
@@ -79,7 +82,14 @@ namespace Custom_Chess_Bot
         }
         public void PlayThread(CancellationTokenSource ct, Form1 form)
         {
-            MySide  = ImageAnalysis.DetectSide(ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen(Settings)));
+            if (!CustomGame)
+            {
+                MySide = ImageAnalysis.DetectSide(ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen(Settings)));
+            }
+            else
+            {
+                MySide = Board.SideToMove;
+            }
             Log.Report(MySide);
             form.Log("" + MySide);
             if (MySide == Side.Black&& !ct.Token.IsCancellationRequested)

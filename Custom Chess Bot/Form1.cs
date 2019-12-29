@@ -38,7 +38,10 @@ namespace Custom_Chess_Bot
             {
                 button4.PerformClick();
             }
-
+            if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F7)
+            {
+                button10.PerformClick();
+            }
         }
         private void DisplayBitMap(Bitmap pic)
         {
@@ -62,6 +65,73 @@ namespace Custom_Chess_Bot
         {
             var firstPosition = await GetMousePosition();
             log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
+        }
+
+
+        public class Prompt : IDisposable
+        {
+            private Form prompt { get; set; }
+            public string Result { get; }
+
+            public Prompt(string text, string caption)
+            {
+                Result = ShowDialog(text, caption);
+            }
+            private const string StartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            private string ShowDialog(string text, string caption)
+            {
+                prompt = new Form()
+                {
+                    Width = 550,
+                    Height = 150,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    Text = caption,
+                    StartPosition = FormStartPosition.CenterScreen,
+                    TopMost = true
+                };
+                Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Dock = DockStyle.Top, TextAlign = ContentAlignment.MiddleCenter };
+                TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 500, Text = StartFen };
+                Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 170, DialogResult = DialogResult.OK };
+                confirmation.Click += (sender, e) => { prompt.Close(); };
+                prompt.Controls.Add(textBox);
+                prompt.Controls.Add(confirmation);
+                prompt.Controls.Add(textLabel);
+                prompt.AcceptButton = confirmation;
+
+                return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+            }
+
+            public void Dispose()
+            {
+                if (prompt != null)
+                {
+                    prompt.Dispose();
+                }
+            }
+        }
+
+        private void Button10_Click(object sender, EventArgs e)
+        {
+            if (!isRunning)
+            {
+                    isRunning = true;
+                using (Prompt prompt = new Prompt("enter custom fen string", "Run from Custom Fen"))
+                {
+                    string result = prompt.Result;
+                    CTPlay = new CancellationTokenSource();
+                    Task.Run(() =>
+                    {
+                        var tsk = Task.Run(() =>
+                        {
+                            using (var pe = new PlayEngine(result))
+                                pe.PlayThread(CTPlay, this);
+                            isRunning = false;
+                        });
+                        tsk.Wait();
+                        tsk.Dispose();
+                    });
+                }
+            }
         }
         private void CancelBtn(object sender, EventArgs e)
         {
@@ -136,11 +206,12 @@ namespace Custom_Chess_Bot
             {
                 CTDisplay = new CancellationTokenSource();
                 Task.Run(() => DisplayThread(CTDisplay), CTDisplay.Token);
-                button5.Text = "Stop display";
+                button5.Text = "Stop";
             }
             else
             {
                 CTDisplay.Cancel();
+                PicBox.Dispose();
                 CTDisplay.Dispose();
                 button5.Text = "Display";
             }
@@ -151,24 +222,17 @@ namespace Custom_Chess_Bot
             {
                 isRunning = true;
                 CTPlay = new CancellationTokenSource();
-                var tsk = Task.Run(() =>
-                {
-                    using (var pe = new PlayEngine())
-                        pe.PlayThread(CTPlay, this);
-                    isRunning = false;
-                });
                 Task.Run(() => {
+                    var tsk = Task.Run(() =>
+                    {
+                        using (var pe = new PlayEngine())
+                            pe.PlayThread(CTPlay, this);
+                        isRunning = false;
+                    });
                     tsk.Wait();
                     tsk.Dispose();
                 });
             }
         }
-        public new void Dispose()
-        {
-            PicBox.Dispose();
-            _globalKeyboardHook.Dispose();
-            CTPlay.Dispose();
-            components.Dispose();
-        }
-    }
+  }
 }
