@@ -18,7 +18,7 @@ namespace UnitTests
             turn.ApplySide(new Side(true));
             Assert.True(board.TurnIn(turn));
             turn = sf.Query(board.GetMoves());
-            Assert.Equal("e7e5", turn + "");
+            Assert.True("e7e5" == turn + "" || "c7c5" == turn + "");
             sf.Dispose();
         }
         [Fact]

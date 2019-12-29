@@ -98,7 +98,7 @@ namespace Custom_Chess_Bot
         {
             if (turn == null)
                 return false;
-            if (ReferenceEquals(turn.TurnSide, null))
+            if (turn.TurnSide is null)
                 turn.ApplySide(SideToMove);
             Figure.SwapCheck(turn);
             Figure.PromotionCheck(turn);
@@ -126,13 +126,7 @@ namespace Custom_Chess_Bot
                 Cells[numEnd+1][wordEnd] = Figures.Space;
             }
             if (turn.Promote)
-                if (SideToMove == Side.White)
-                {
-                    fgr = Figures.WhiteQueen;
-
-                }
-                else
-                    fgr = Figures.BlackQueen;
+                fgr = SideToMove == Side.White ? Figures.WhiteQueen : Figures.BlackQueen;
 
             if (Figure.OOTurn(turn, out Turn extra))
             {

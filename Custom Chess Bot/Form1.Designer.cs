@@ -69,7 +69,7 @@ namespace Custom_Chess_Bot
             this.button4.TabIndex = 0;
             this.button4.Text = "[F4] Stop";
             this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.Button4_Click);
+            this.button4.Click += new System.EventHandler(this.CancelBtn);
             // 
             // panel1
             // 
@@ -108,7 +108,7 @@ namespace Custom_Chess_Bot
             this.button3.TabIndex = 7;
             this.button3.Text = "[F2] Run";
             this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.CancelBtn);
+            this.button3.Click += new System.EventHandler(this.RunBtn);
             // 
             // button5
             // 

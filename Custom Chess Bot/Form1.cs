@@ -63,7 +63,7 @@ namespace Custom_Chess_Bot
             var firstPosition = await GetMousePosition();
             log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
         }
-        private void Button4_Click(object sender, EventArgs e)
+        private void CancelBtn(object sender, EventArgs e)
         {
             if (CTPlay != null)
             {
@@ -145,17 +145,21 @@ namespace Custom_Chess_Bot
                 button5.Text = "Display";
             }
         }
-        private void CancelBtn(object sender, EventArgs e)
+        private void RunBtn(object sender, EventArgs e)
         {
             if (!isRunning)
             {
                 isRunning = true;
                 CTPlay = new CancellationTokenSource();
-                Task.Run(() =>
+                var tsk = Task.Run(() =>
                 {
                     using (var pe = new PlayEngine())
                         pe.PlayThread(CTPlay, this);
                     isRunning = false;
+                });
+                Task.Run(() => {
+                    tsk.Wait();
+                    tsk.Dispose();
                 });
             }
         }
@@ -163,6 +167,7 @@ namespace Custom_Chess_Bot
         {
             PicBox.Dispose();
             _globalKeyboardHook.Dispose();
+            CTPlay.Dispose();
             components.Dispose();
         }
     }

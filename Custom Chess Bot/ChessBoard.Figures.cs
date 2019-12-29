@@ -21,11 +21,11 @@
             public void SwapCheck(Turn turn, bool transformed = false)
             {
                 turn.ToInt(out int wordStart, out int numStart, out int wordEnd, out int numEnd);
-                if (!(turn.TurnSide == Side.Black && (Board.Cells[numStart][wordStart] == BlackPawn ||
+                if ((turn.TurnSide == Side.Black && !(Board.Cells[numStart][wordStart] == BlackPawn ||
                     Board.Cells[numStart][wordStart] == BlackBishop || Board.Cells[numStart][wordStart] == BlackKing ||
                     Board.Cells[numStart][wordStart] == BlackKnight || Board.Cells[numStart][wordStart] == BlackQueen ||
                     Board.Cells[numStart][wordStart] == BlackRook) || turn.TurnSide == Side.White &&
-                    (Board.Cells[numStart][wordStart] == WhitePawn || Board.Cells[numStart][wordStart] == WhiteBishop ||
+                    !(Board.Cells[numStart][wordStart] == WhitePawn || Board.Cells[numStart][wordStart] == WhiteBishop ||
                     Board.Cells[numStart][wordStart] == WhiteKing || Board.Cells[numStart][wordStart] == WhiteKnight ||
                     Board.Cells[numStart][wordStart] == WhiteQueen || Board.Cells[numStart][wordStart] == WhiteRook)))
                 {

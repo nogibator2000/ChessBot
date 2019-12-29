@@ -10,6 +10,7 @@ namespace Custom_Chess_Bot
 {
     public class ChessEngine:IDisposable
     {
+        private const string TimeFlag = "setoption name Minimum Thinking Time value ";
         private const string SkillFlag = "setoption name Skill Level value ";
         private const string GoMTFlag = "go movetime ";
         private const string BestMoveFlag = "bestmove ";
@@ -67,6 +68,7 @@ namespace Custom_Chess_Bot
         {
             Promise = new ManualResetEvent(false);
             SendLine(SkillFlag + skill);
+            SendLine(TimeFlag + mt);
             SendLine(query);
             SendLine(GoMTFlag + mt);
             Promise.Reset();
