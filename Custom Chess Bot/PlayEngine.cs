@@ -3,135 +3,108 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Custom_Chess_Bot
 {
-    class PlayEngine: IDisposable
+    class PlayEngine : IDisposable
     {
-        public PlayEngine(CancellationTokenSource ct, Form1 form)
+        Side MySide;
+        ChessBoard Board;
+        LogWriter Log;
+        SettingsStore Settings;
+        ChessEngine Engine;
+        Controller AI;
+        private const int DefaultSkill = 20;
+        private const int RetardedSkill = 1;
+        public PlayEngine(string str=null)
         {
-            PlayThread(ct, form);
-        }
-        private static readonly Logger logger = new Logger();
-
-        private static readonly Settings settings = new Settings();
-        [DllImport("user32.dll")]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
-        private const int MOUSEEVENTF_LEFTDOWN = 0x02;
-        private const int MOUSEEVENTF_LEFTUP = 0x04;
-        private const int MOUSEEVENTF_RIGHTDOWN = 0x08;
-        private const int MOUSEEVENTF_RIGHTUP = 0x10;
-        public void MakeMouseClick(int X, int Y)
-        {
-                Cursor.Position = new Point(X, Y);
-                Thread.Sleep(10);
-            mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)X, (uint)Y, 0, 0);
-            Thread.Sleep(10);
-            mouse_event(MOUSEEVENTF_LEFTUP, (uint)X, (uint)Y, 0, 0);
-        }
-        private List<Bitmap> GetBoardAfterAnimation(CancellationTokenSource ct)
-        {
-            Bitmap candidate1, candidate2;
-            while(!ct.IsCancellationRequested)
+            if (str != null)
             {
-                candidate1 = ImageAnalysis.CaptureScreen();
-                Thread.Sleep(settings.AnimationDelay);
-                candidate2 = ImageAnalysis.CaptureScreen();
-                var c1h = ImageAnalysis.GetImageHash(candidate1, settings.AnimationHash, Settings.AnimationWindow);
-                var c2h = ImageAnalysis.GetImageHash(candidate2, settings.AnimationHash, Settings.AnimationWindow);
-                int equalElements = c1h.Zip(c2h, (k, j) => k == j).Count(eq => eq);
-                if (equalElements>=40000)
-                    return ImageAnalysis.SliceTitles(candidate1);
-            }
-            return new List<Bitmap>();
-        }
-        public Turn findEnemyTurn(bool side, CancellationTokenSource ct)
-        {
-            Turn turn;
-            var slicedBoard = GetBoardAfterAnimation(ct);
-            do
-            {
-                Thread.Sleep(settings.RefreshRate);
-                turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
-                if (turn.valid && !ct.IsCancellationRequested)
-                {
-                    Thread.Sleep(settings.RefreshRate);
-                    turn = ImageAnalysis.AnalizingTurn(slicedBoard, ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()), side);
-                }
-            } while (!turn.valid&&!ct.IsCancellationRequested);
-            return turn;
-        }
-        public Turn enemyTurn(bool side, Board board, CancellationTokenSource ct)
-        {
-            var turn = findEnemyTurn(side, ct);
-            board.MakeTurn(turn, side);
-            logger.Log(Logger.Turn + Logger.Enemy, turn.GetStr());
-            return turn;
-        }
-        public Turn myTurn(bool side, Board board, CancellationTokenSource ct, ChessEngine engine)
-        {
-            var _turn = engine.NextMove(board, side);
-            if (!_turn.valid)
-                ct.Cancel();
-            if (!ct.IsCancellationRequested)
-            {
-                MadeMove(_turn, side);
-                if (!board.MakeTurn(_turn, side))
-                    MadeMove(_turn.end, side);//transform
-            }
-            logger.Log(Logger.Turn + Logger.Me, _turn.GetStr());
-            return _turn;
-        }
-        public void PlayThread(CancellationTokenSource ct, Form1 form)
-        {
-            var engine = new ChessEngine();
-            var side = ImageAnalysis.AmIWhite(ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen()));
-            var board = new Board();
-            if (side)
-            {
-                form.Log(@"You are White!");
-                while (!ct.Token.IsCancellationRequested)
-                {
-                    form.Log(myTurn(side, board, ct, engine).GetStr());
-                    form.Log(enemyTurn(!side, board, ct).GetStr());
-                }
+                Board = new ChessBoard(str);
             }
             else
             {
-                form.Log(@"You are Black!");
-                while (!ct.Token.IsCancellationRequested)
-                {
-                    form.Log(enemyTurn(!side, board, ct).GetStr());
-                    form.Log(myTurn(side, board, ct, engine).GetStr());
-                }
+                Board = new ChessBoard();
             }
-            engine.Dispose();
+            Settings = new SettingsStore();
+            Log = new LogWriter(Settings);
+            Engine = new ChessEngine(Settings.EnginePath);
+            AI = new Controller(Settings);
         }
-        private void MadeMove(int transformClick, bool side)
+        const string Completed = @"Completed";
+        private const int DelayTurns = 10;
+        private const float DelayPart = 0.7f;
+
+        private int CalcDelay(int minDelay, int maxDelay)
         {
-            MadeMove(new Turn(transformClick, transformClick, side), side);
+            var rand = new Random();
+            var delay =rand.Next(Convert.ToInt32(minDelay * DelayPart), Convert.ToInt32(maxDelay * DelayPart));
+            if (rand.Next(0, DelayTurns + 1) == 1)
+                delay+=rand.Next(Convert.ToInt32(minDelay * (1 - DelayPart) * DelayTurns), Convert.ToInt32(maxDelay * (1 - DelayPart) * DelayTurns));
+            return delay;
         }
-        private void MadeMove(Turn _turn, bool side)
+
+        public Turn EnemyTurn(CancellationTokenSource ct)
         {
-            var turn = _turn;
-            if (!side)
-                turn = _turn.Inverse();
-            var HumanDelay = new Random();
-            MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumStart() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymStart() + settings.BoardSize.Height / 16);
-            Thread.Sleep(HumanDelay.Next(Convert.ToInt32(settings.HumanBeingDelayMin*0.7), Convert.ToInt32(settings.HumanBeingDelayMax * 0.7)));
-            if (HumanDelay.Next(0, 9) == 0)
-                Thread.Sleep(HumanDelay.Next(Convert.ToInt32(settings.HumanBeingDelayMin * 3), Convert.ToInt32(settings.HumanBeingDelayMax * 3)));
-            MakeMouseClick(settings.BoardPosition.X + settings.BoardSize.Width / 8 * turn.GetNumEnd() + settings.BoardSize.Width / 16, settings.BoardPosition.Y + settings.BoardSize.Height / 8 * turn.GetSymEnd() + settings.BoardSize.Height / 16);
+            var turn = ImageAnalysis.FindTurn(Log, Settings,ct);
+            if (turn == null)
+                return null;
+            if (MySide == Side.Black)
+                turn = turn.GetInverse();
+            Board.TurnIn(turn);
+            return turn;
+        }
+        public Turn MyTurn(CancellationTokenSource ct)
+        {
+            var rand = new Random();
+            var skill = DefaultSkill;
+            if (rand.Next(1, Settings.MissplayTurns + 1) == Settings.MissplayTurns)
+                skill = RetardedSkill;
+            var delay = CalcDelay(Settings.TurnMinDelay, Settings.TurnMaxDelay);
+            var turn = Engine.Query("" + Board.GetMoves(), delay, skill);
+            if (turn == null)
+                ct.Cancel();
+            Thread.Sleep(delay);
+            if (!ct.IsCancellationRequested)
+                if (MySide == Side.Black)
+                {
+                    AI.MakeTurn(turn.GetInverse());
+                }
+                else
+                    AI.MakeTurn(turn);
+            Board.TurnIn(turn);
+            return turn;
+        }
+        public void PlayThread(CancellationTokenSource ct, Form1 form)
+        {
+            MySide  = ImageAnalysis.DetectSide(ImageAnalysis.SliceTitles(ImageAnalysis.CaptureScreen(Settings)));
+            Log.Report(MySide);
+            form.Log("" + MySide);
+            if (MySide == Side.Black&& !ct.Token.IsCancellationRequested)
+            {
+                var str = ""+EnemyTurn(ct);
+                form.Log(str);
+                Log.Report(str);
+            }
+            while (!ct.Token.IsCancellationRequested)
+            {
+                var _str = ""+MyTurn(ct);
+                form.Log(_str);
+                Log.Report(_str);
+                var str = ""+EnemyTurn(ct);
+                form.Log(str);
+                Log.Report(str);
+            }
+            form.Log(Completed);
+            Log.Report(Completed);
         }
 
         public void Dispose()
         {
-            GC.Collect();
+            ((IDisposable)Engine).Dispose();
         }
     }
 }

@@ -3,89 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Custom_Chess_Bot
 {
-    class ChessEngine:IDisposable
+    public class ChessEngine:IDisposable
     {
-        private static readonly Logger logger = new Logger();
-        string turn;
-        private static readonly Settings settings = new Settings();
-
-        public static string ExtractTurn(string strSource, string flag)
+        private const string SkillFlag = "setoption name Skill Level value ";
+        private const string GoMTFlag = "go movetime ";
+        private const string BestMoveFlag = "bestmove ";
+        private const string SplitSymbol = " ";
+        private ManualResetEvent Promise;
+        private string Move;
+        public bool Running;
+        private readonly Process ChessProcess;
+        public ChessEngine(string  path)
         {
-            int Start;
-            if (strSource == null)
-            {
-                return "terminated";
-            }
-            if (strSource.Contains(flag))
-            {
-                Start = strSource.IndexOf(flag, 0) + flag.Length;
-                return strSource.Substring(Start);
-            }
-            else
-            {
-                return "";
-            }
-        }
-
-        public Turn NextMove(Board board, bool side)
-        {
-//            logger.Log(Logger.Search + Logger.Me, "position fen " + board.translateBoardToFEN(side));
-            logger.Log(Logger.Search + Logger.Me, "position startpos moves " + board.moves);
-            turn = "";
-            //            SendLine("position fen " + board.translateBoardToFEN(side));
-            SendLine("position startpos moves " + board.moves);
-            var rand = new Random();
-            var MissPlayCheck = rand.Next(1, settings.MissplayEveryXTurns + 1);
-            if (MissPlayCheck == settings.MissplayEveryXTurns)
-            {
-                SendLine("setoption name Skill Level value 1");
-            }
-            else
-            {
-                SendLine("setoption name Skill Level value 20");
-            }
-            SendLine("go movetime " + settings.MoveTime);
-            while (turn == "")
-            {
-
-            }
-            if (turn == "terminated")
-            {
-                return new Turn(false);
-            }
-            var _var = turn.ToCharArray();
-            var startpoint = 0;
-            for (var i = 0; i < Settings.syms.Length; i++)
-            {
-                if (Settings.syms[i] == _var[0].ToString())
-                {
-                    startpoint = Settings.BoardLenght*(Settings.BoardLenght - Convert.ToInt32(_var[1].ToString())) + i;
-                    break;
-                }
-            }
-            var endpoint = 0;
-            for (var i = 0; i < Settings.syms.Length; i++)
-            {
-                if (Settings.syms[i] == _var[2].ToString())
-                {
-                    endpoint = Settings.BoardLenght* (Settings.BoardLenght -  Convert.ToInt32(_var[3].ToString())) + i;
-                    break;
-                }
-            }
-            var _turn = new Turn(startpoint, endpoint, side);
-//            if (!side) _turn = _turn.Inverse();
-            return _turn;
-        }
-        Process myProcess;
-        public ChessEngine() 
-        {
+            Running = true;
             ProcessStartInfo si = new ProcessStartInfo()
             {
-                FileName = settings.EnginePath,
+                FileName = path,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
@@ -93,32 +31,58 @@ namespace Custom_Chess_Bot
                 RedirectStandardOutput = true
             };
 
-            myProcess = new Process
+            ChessProcess = new Process
             {
                 StartInfo = si
             };
-            myProcess.OutputDataReceived += new DataReceivedEventHandler(myProcess_OutputDataReceived);
+            ChessProcess.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
 
-            myProcess.Start();
-            myProcess.BeginErrorReadLine();
-            myProcess.BeginOutputReadLine();
+            ChessProcess.Start();
+            ChessProcess.BeginErrorReadLine();
+            ChessProcess.BeginOutputReadLine();
 
         }
-        public void SendLine(string command)
+        private void SendLine(string command)
         {
-            myProcess.StandardInput.WriteLine(command);
-            myProcess.StandardInput.Flush();
+            ChessProcess.StandardInput.WriteLine(command);
+            ChessProcess.StandardInput.Flush();
+        }
+        private void OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (Running)
+                if (e.Data == null)
+                {
+                    Running = false;
+                    Promise.Set();
+                }
+                else if (e.Data.Contains(BestMoveFlag))
+                {
+                    var start = e.Data.IndexOf(BestMoveFlag) + BestMoveFlag.Length;
+                    Move = e.Data.Substring(start).Split(SplitSymbol)[0];
+                    Promise.Set();
+                }
         }
 
-        public void myProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        public Turn Query(string query, int mt = 500, int skill= 20)
         {
-            turn = ExtractTurn(e.Data, "bestmove ");
+            Promise = new ManualResetEvent(false);
+            SendLine(SkillFlag + skill);
+            SendLine(query);
+            SendLine(GoMTFlag + mt);
+            Promise.Reset();
+            Promise.WaitOne();
+            if (!Running)
+                return null;
+            return new Turn(Move);
         }
+
 
         public void Dispose()
         {
-            myProcess.Dispose();
-            GC.Collect();
+            if (ChessProcess != null)
+                ChessProcess.Dispose();
+            if(Promise != null)
+            Promise.Dispose();
         }
     }
 }

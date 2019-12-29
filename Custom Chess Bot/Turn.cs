@@ -1,86 +1,92 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Custom_Chess_Bot
 {
-    class Turn
+    public class Turn
     {
-        public Turn transform()
+        private static readonly Dictionary<string, int> Symbols = new Dictionary<string, int>()
+        { { "a", 0 }, { "b", 1 }, { "c", 2 }, { "d", 3 }, { "e", 4 }, { "f", 5 }, { "g", 6 }, { "h", 7 } };
+        public int Start;
+        public int End;
+        public Side TurnSide;
+        public bool Promote;
+        private const string TransformSimbol = "q";
+        public bool Valid;
+
+        public Turn(int start, int end, Side side=null, bool promote = false)
         {
-            return new Turn(end, start, side);
+            Valid = true;
+            TurnSide = side;
+            Promote = promote;
+            Start = start;
+            End = end;
         }
-        private readonly static Settings settings = new Settings();
-        public Turn(bool _valid)
+        public Turn(string turn, Side side=null)
         {
-            valid = _valid;
-        }
-        public Turn(bool isShort ,bool _side)
-        {
-            valid = true;
-            side = _side;
-            if (isShort)
+            try
             {
-                oo = true;
-                ooo = false;
+                Valid = true;
+                TurnSide = side;
+                var startSym = Symbols[turn[0].ToString()];
+                var startNum = Convert.ToInt32(turn[1].ToString()) - 1;
+                var endSym = Symbols[turn[2].ToString()];
+                var endNum = Convert.ToInt32(turn[3].ToString()) - 1;
+                Start = startNum * SettingsStore.BoardLenght + startSym;
+                End = endNum * SettingsStore.BoardLenght + endSym;
+                if (turn.Length > 4)
+                {
+                    Promote = true;
+                }
+                else
+                {
+                    Promote = false;
+                }
             }
-            else
+            catch
             {
-                ooo = true;
-                oo = false;
+                Valid = false;
             }
         }
-        public Turn(int _start, int _end, bool _side)
+        public void ApplyPromotion()
         {
-            if (start >= 0 && start < 64 && end >= 0 && end < 64)
-                valid = true;
-            else
-                valid = false;
-            side = _side;
-            start = _start;
-            end = _end;
-            oo = false;
-            ooo = false;
+            Promote = true;
         }
-        public bool oo;
-        public bool ooo;
-        public readonly bool valid;
-        public int start;
-        public int end;
-        public bool side;
-        public Turn Inverse()
+        public void ApplySide(Side side)
         {
-            return new Turn(63 - start, 63 - end, side);
+            TurnSide = side;
         }
-        public int GetNumStart()
+        public Turn GetInverse()
         {
-            return start % 8;
+            return new Turn(63 - Start, 63 - End, TurnSide, Promote);
         }
-        public int GetSymStart()
+        public void ApplySwap()
         {
-            return start / 8;
+            var c = Start;
+            Start = End;
+            End = c;
         }
-        public int GetNumEnd()
+        public void Invalidate()
         {
-            return end % 8;
+            Valid = false;
         }
-        public int GetSymEnd()
+
+        public override string ToString()
         {
-            return end / 8;
+            var start = Symbols.FirstOrDefault(x => x.Value == Start % SettingsStore.BoardLenght).Key + (1+Start / SettingsStore.BoardLenght);
+            var end = Symbols.FirstOrDefault(x => x.Value == End % SettingsStore.BoardLenght).Key + (1+End / SettingsStore.BoardLenght);
+            var m = "";
+            if (Promote)
+                m += TransformSimbol;
+            return start+end+m;
         }
-        public string GetStr()
+        public void ToInt(out int wordStart, out int numStart, out int wordEnd, out int numEnd)
         {
-            if (valid)
-            {
-                if (ooo && side)
-                    return "e1c1";
-                if (oo && side)
-                    return "e1g1";
-                if (oo && !side)
-                    return "e8g8";
-                if (ooo && !side)
-                    return "e8c8";
-                return Settings.syms[GetNumStart()] + (8 - GetSymStart()) + Settings.syms[GetNumEnd()] + (8 - GetSymEnd());
-            }
-            return "Not valid.";
+            wordStart = Start % SettingsStore.BoardLenght;
+            numStart = Start / SettingsStore.BoardLenght;
+            wordEnd = End % SettingsStore.BoardLenght;
+            numEnd = End / SettingsStore.BoardLenght;
         }
     }
 }

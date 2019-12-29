@@ -7,15 +7,14 @@ using System.Diagnostics;
 
 namespace Custom_Chess_Bot
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IDisposable
     {
         private bool isRunning = false;
-        private static CancellationTokenSource ct;
-        private Settings settings = new Settings();
+        private static CancellationTokenSource CTPlay;
         private GlobalKeyboardHook _globalKeyboardHook;
-        private static readonly Logger logger = new Logger();
-        private static CancellationTokenSource cts;
-
+        PictureBox PicBox;
+        private static CancellationTokenSource CTDisplay;
+        const string Ready = @"Ready!";
         public void SetupKeyboardHooks()
         {
             _globalKeyboardHook = new GlobalKeyboardHook();
@@ -27,7 +26,7 @@ namespace Custom_Chess_Bot
         {
             SetupKeyboardHooks();
             InitializeComponent();
-            Log("Ready!");
+            Log(Ready);
         }
         private void KeyPressHandler(object sender, GlobalKeyboardHookEventArgs e)
         {
@@ -43,24 +42,21 @@ namespace Custom_Chess_Bot
         }
         private void DisplayBitMap(Bitmap pic)
         {
-            var picBox = new PictureBox();
-            picBox.Image = pic;
-            picBox.Width = 300;
-            picBox.Height = 300;
-            picBox.SizeMode = PictureBoxSizeMode.Zoom;
+            PicBox = new PictureBox
+            {
+                Image = pic,
+                Width = 300,
+                Height = 300,
+                SizeMode = PictureBoxSizeMode.Zoom
+            };
             if (panel1.InvokeRequired)
             {
-                panel1.Invoke(new MethodInvoker(delegate {
+                panel1.Invoke(new MethodInvoker(delegate
+                {
                     panel1.Controls.Clear();
-                    panel1.Controls.Add(picBox);
+                    panel1.Controls.Add(PicBox);
                 }));
             }
-
-        }
-        private void Reload()
-        {
-            ImageAnalysis.settings = new Settings();
-            settings = new Settings();
         }
         private async void Button1_Click(object sender, EventArgs e)
         {
@@ -69,23 +65,25 @@ namespace Custom_Chess_Bot
         }
         private void Button4_Click(object sender, EventArgs e)
         {
-            if (ct != null)
+            if (CTPlay != null)
             {
-                ct.Cancel();
+                CTPlay.Cancel();
             }
         }
         private void Button6_Click(object sender, EventArgs e)
         {
-            var process = new Process();
-            process.StartInfo = new ProcessStartInfo()
+            var process = new Process
             {
-                UseShellExecute = true,
-                FileName = Settings.SettingsPath
+                StartInfo = new ProcessStartInfo()
+                {
+                    UseShellExecute = true,
+                    FileName = SettingsStore.SettingsPath
+                }
             };
 
             process.Start();
             process.WaitForExit();
-            Reload();
+            process.Dispose();
         }
         private async Task<Point> GetMousePosition()
         {
@@ -97,7 +95,7 @@ namespace Custom_Chess_Bot
 
 
         }
-        private async void button2_Click(object sender, EventArgs e)
+        private async void CalibrateBoard(object sender, EventArgs e)
         {
             log.Text = @"Click top-left board point.";
             var firstPosition = await GetMousePosition();
@@ -105,65 +103,67 @@ namespace Custom_Chess_Bot
             log.Text = @"Click right-bottom board point.";
             var secondPosition = await GetMousePosition();
             var BoardSize = new Size(secondPosition.X - firstPosition.X, secondPosition.Y - firstPosition.Y);
+            var settings = new SettingsStore();
             settings.CalibrateBoard(BoardSize, firstPosition);
             log.Text = @"Saved!";
-            Reload();
         }
         public void Log(string _log)
         {
-                if (log.InvokeRequired)
-                {
-                    log.Invoke(new MethodInvoker(delegate
-                    {
-                        log.Text = _log;
-                    }));
-                }
-                else
+            if (log.InvokeRequired)
+            {
+                log.Invoke(new MethodInvoker(delegate
                 {
                     log.Text = _log;
-                }
+                }));
+            }
+            else
+            {
+                log.Text = _log;
+            }
         }
         private void DisplayThread(CancellationTokenSource cts)
         {
             while (!cts.IsCancellationRequested)
             {
-                    DisplayBitMap(ImageAnalysis.CaptureScreen());
-                    Thread.Sleep(1000);
+                var settings = new SettingsStore();
+                DisplayBitMap(ImageAnalysis.CaptureScreen(settings));
+                Thread.Sleep(34);
             }
         }
-        private void button5_Click(object sender, EventArgs e)
+        private void DisplayButton(object sender, EventArgs e)
         {
             if (button5.Text == "Display")
             {
-                cts = new CancellationTokenSource();
-                Task.Run(() => DisplayThread(cts), cts.Token);
+                CTDisplay = new CancellationTokenSource();
+                Task.Run(() => DisplayThread(CTDisplay), CTDisplay.Token);
                 button5.Text = "Stop display";
             }
             else
             {
-                cts.Cancel();
-                cts.Dispose();
+                CTDisplay.Cancel();
+                CTDisplay.Dispose();
                 button5.Text = "Display";
             }
         }
-        private void button3_Click(object sender, EventArgs e)
+        private void CancelBtn(object sender, EventArgs e)
         {
             if (!isRunning)
             {
                 isRunning = true;
+                CTPlay = new CancellationTokenSource();
                 Task.Run(() =>
                 {
-                    ct = new CancellationTokenSource();
-                    Task.Run(() =>
-                     {
-                         logger.Log(Logger.SpawnThread, "Play");
-                         var pe = new PlayEngine(ct, this);
-                         pe.Dispose();
-                     }).Wait();
-                    Log("Completed");
+                    using (var pe = new PlayEngine())
+                        pe.PlayThread(CTPlay, this);
                     isRunning = false;
                 });
             }
+        }
+        public new void Dispose()
+        {
+            PicBox.Dispose();
+            _globalKeyboardHook.Dispose();
+            components.Dispose();
         }
     }
 }

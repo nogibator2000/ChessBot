@@ -47,7 +47,7 @@ namespace Custom_Chess_Bot
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 45);
             this.button1.TabIndex = 0;
-            this.button1.Text = "Color Info";
+            this.button1.Text = "Info";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
@@ -86,9 +86,9 @@ namespace Custom_Chess_Bot
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 47);
             this.button2.TabIndex = 5;
-            this.button2.Text = "Calibrate Board";
+            this.button2.Text = "Calibrate";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.CalibrateBoard);
             // 
             // log
             // 
@@ -108,7 +108,7 @@ namespace Custom_Chess_Bot
             this.button3.TabIndex = 7;
             this.button3.Text = "[F2] Run";
             this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.button3.Click += new System.EventHandler(this.CancelBtn);
             // 
             // button5
             // 
@@ -118,7 +118,7 @@ namespace Custom_Chess_Bot
             this.button5.TabIndex = 7;
             this.button5.Text = "Display";
             this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
+            this.button5.Click += new System.EventHandler(this.DisplayButton);
             // 
             // Form1
             // 
@@ -134,7 +134,7 @@ namespace Custom_Chess_Bot
             this.Controls.Add(this.button5);
             this.Controls.Add(this.button6);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Chess Bot v 1.0.0";
             this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
