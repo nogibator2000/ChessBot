@@ -135,7 +135,7 @@ namespace Custom_Chess_Bot
             }
             if (candidates[0] == 4 || candidates[1] == 5 || candidates[2] == 6 || candidates[3] == 7)
             {
-                return new Turn(4, 7, new Side(Side.White));
+                return new Turn(4, 6, new Side(Side.White));
             }
             if (candidates[0] == 56 || candidates[1] == 58 || candidates[2] == 59 || candidates[3] == 60)
             {
@@ -147,19 +147,19 @@ namespace Custom_Chess_Bot
             }
             if (candidates[0] == 59 || candidates[1] == 60 || candidates[2] == 61 || candidates[3] == 63)
             {
-                return new Turn(4, 2, new Side(Side.White));
+                return new Turn(59, 61, new Side(Side.White));
             }
             if (candidates[0] == 56 || candidates[1] == 57 || candidates[2] == 58 || candidates[3] == 59)
             {
-                return new Turn(4, 7, new Side(Side.White));
+                return new Turn(59, 57, new Side(Side.White));
             }
             if (candidates[0] == 3 || candidates[1] == 4 || candidates[2] == 5 || candidates[3] == 7)
             {
-                return new Turn(60, 58, new Side(Side.Black));
+                return new Turn(3, 5, new Side(Side.Black));
             }
             if (candidates[0] == 0 || candidates[1] == 1 || candidates[2] == 2 || candidates[3] == 3)
             {
-                return new Turn(60, 62, new Side(Side.Black));
+                return new Turn(3, 1, new Side(Side.Black));
             }
             return null;
         }

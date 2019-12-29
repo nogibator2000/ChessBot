@@ -42,7 +42,7 @@ namespace Custom_Chess_Bot
         {
             var rand = new Random();
             var delay =rand.Next(Convert.ToInt32(minDelay * DelayPart), Convert.ToInt32(maxDelay * DelayPart));
-            if (rand.Next(0, DelayTurns + 1) == 1)
+            if (rand.Next(1, DelayTurns + 1) == 1)
                 delay+=rand.Next(Convert.ToInt32(minDelay * (1 - DelayPart) * DelayTurns), Convert.ToInt32(maxDelay * (1 - DelayPart) * DelayTurns));
             return delay;
         }
@@ -67,7 +67,6 @@ namespace Custom_Chess_Bot
             var turn = Engine.Query("" + Board.GetMoves(), delay, skill);
             if (turn == null)
                 ct.Cancel();
-            Thread.Sleep(delay);
             if (!ct.IsCancellationRequested)
                 if (MySide == Side.Black)
                 {

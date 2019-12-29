@@ -114,7 +114,7 @@ namespace Custom_Chess_Bot
             Color4 = Color.FromArgb(238, 238, 210).ToArgb();
             FilterEnable = false;
             AnimationDelay = 30;
-            RefreshRate = 100;
+            RefreshRate = 50;
             TurnMinDelay = 500;
             TurnMaxDelay = 2000;
             WhiteBright = 0.9f;
