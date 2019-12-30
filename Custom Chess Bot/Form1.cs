@@ -15,6 +15,10 @@ namespace Custom_Chess_Bot
         PictureBox PicBox;
         private static CancellationTokenSource CTDisplay;
         const string Ready = @"Ready!";
+        const string TM = @"[F10]Turn Mode";
+        const string SM = @"[F10]Suggest Mode!";
+        public bool Suggest = false;
+        public bool KeyUpDown = false;
         public void SetupKeyboardHooks()
         {
             _globalKeyboardHook = new GlobalKeyboardHook();
@@ -27,22 +31,28 @@ namespace Custom_Chess_Bot
             SetupKeyboardHooks();
             InitializeComponent();
             Log(Ready);
-            var b = new ChessBoard();
-            b.TurnIn(new Turn("e2e4"));
         }
         private void KeyPressHandler(object sender, GlobalKeyboardHookEventArgs e)
         {
-            if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F2)
+            KeyUpDown = !KeyUpDown;
+            if (KeyUpDown)
             {
-                button3.PerformClick();
-            }
-            if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F4)
-            {
-                button4.PerformClick();
-            }
-            if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F7)
-            {
-                button10.PerformClick();
+                if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F2)
+                {
+                    button3.PerformClick();
+                }
+                if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F4)
+                {
+                    button4.PerformClick();
+                }
+                if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F7)
+                {
+                    button10.PerformClick();
+                }
+                if (e.KeyboardData.VirtualCode == GlobalKeyboardHook.F10)
+                {
+                    button7.PerformClick();
+                }
             }
         }
         private void DisplayBitMap(Bitmap pic)
@@ -63,13 +73,7 @@ namespace Custom_Chess_Bot
                 }));
             }
         }
-        private async void Button1_Click(object sender, EventArgs e)
-        {
-            var firstPosition = await GetMousePosition();
-            log.Text = ImageAnalysis.GetColourBrighness(firstPosition).ToString();
-        }
-
-
+ 
         public class Prompt : IDisposable
         {
             private Form prompt { get; set; }
@@ -156,6 +160,14 @@ namespace Custom_Chess_Bot
             process.Start();
             process.WaitForExit();
             process.Dispose();
+        }
+        private void Button7_Click(object sender, EventArgs e)
+        {
+            Suggest = !Suggest;
+            if (Suggest)
+                button7.Text = SM;
+            else
+                button7.Text = TM;
         }
         private async Task<Point> GetMousePosition()
         {

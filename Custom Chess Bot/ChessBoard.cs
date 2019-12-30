@@ -102,9 +102,10 @@ namespace Custom_Chess_Bot
                 turn.ApplySide(SideToMove);
             Figure.SwapCheck(turn);
             Figure.PromotionCheck(turn);
-            Figure.LegalValidate(turn);
-            if (turn.TurnSide.ToString() != SideToMove.ToString() || !turn.Valid)
-                return false;
+            //           Figure.LegalValidate(turn);
+//            if (turn.TurnSide.ToString() != SideToMove.ToString() || !turn.Valid)
+            if (!turn.Valid)
+               return false;
             MakeTurn(turn);
             Moves += turn + FenSpace;
             SideToMove.Switch();

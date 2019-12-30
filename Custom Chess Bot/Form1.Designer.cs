@@ -32,7 +32,6 @@ namespace Custom_Chess_Bot
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button1 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
@@ -41,18 +40,19 @@ namespace Custom_Chess_Bot
             this.button4 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
+            this.button7 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // button1
+            // button7
             // 
-            this.button1.Location = new System.Drawing.Point(351, 210);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(80, 30);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Info";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
-//
+            this.button7.Location = new System.Drawing.Point(351, 290);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(80, 30);
+            this.button7.TabIndex = 0;
+            this.button7.Text = "[F10]Turn Mode";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.Button7_Click);
+            //
             this.button10.Location = new System.Drawing.Point(351, 250);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(80, 30);
@@ -140,12 +140,12 @@ namespace Custom_Chess_Bot
             this.Controls.Add(this.log);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.button10);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.button6);
+            this.Controls.Add(this.button7);
             this.Name = "Form1";
-            this.Text = "Chess Bot v 1.0.0";
+            this.Text = "Chess Bot v 1.0.1";
             this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -154,7 +154,6 @@ namespace Custom_Chess_Bot
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button button2;
@@ -163,6 +162,7 @@ namespace Custom_Chess_Bot
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Button button7;
     }
 }
 

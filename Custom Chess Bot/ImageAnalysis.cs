@@ -22,25 +22,7 @@ namespace Custom_Chess_Bot
             gfxScreenshot.CopyFromScreen(settings.BoardPosition.X, settings.BoardPosition.Y, 0, 0, settings.BoardSize, CopyPixelOperation.SourceCopy);
 
             gfxScreenshot.Dispose();
-            if (settings.FilterEnable)
-                return ApplyFilter(screenshot, settings);
             return screenshot;
-        }
-        private static Bitmap ApplyFilter(Bitmap bmpBoard, SettingsStore settings)
-        {
-
-            for (int y = 0; y < bmpBoard.Height; y++)
-            {
-                for (int x = 0; x < bmpBoard.Width; x++)
-                {
-                    var pixel = bmpBoard.GetPixel(x, y);
-                    if (pixel.ToArgb() == settings.Color1 || pixel.ToArgb() == settings.Color2 || pixel.ToArgb() == settings.Color3 || pixel.ToArgb() == settings.Color4)
-                    {
-                        bmpBoard.SetPixel(x, y, Color.FromArgb(settings.NeutralColor));
-                    }
-                }
-            }
-            return bmpBoard;
         }
         public static Side DetectSide(List<Bitmap> board)
         {
@@ -53,26 +35,29 @@ namespace Custom_Chess_Bot
         private static List<Bitmap> GetSmoothBoard(SettingsStore Settings, CancellationTokenSource ct)
         {
             Bitmap candidate1, candidate2;
+            candidate1 = CaptureScreen(Settings);
             while (!ct.IsCancellationRequested)
             {
-                candidate1 = CaptureScreen(Settings);
                 Thread.Sleep(Settings.AnimationDelay);
                 candidate2 = CaptureScreen(Settings);
                 var c1h = GetImageHash(candidate1, Settings.AnimationHash, AnimationWindow, Settings.WhiteBright, Settings.BlackBright);
                 var c2h = GetImageHash(candidate2, Settings.AnimationHash, AnimationWindow, Settings.WhiteBright, Settings.BlackBright);
                 int equalElements = c1h.Zip(c2h, (k, j) => k == j).Count(eq => eq);
                 if (equalElements == c1h.Count())
+                {
                     return SliceTitles(candidate1);
+                }
+                else candidate1 = candidate2;
             }
             return null;
         }
-        public static Turn FindTurn(LogWriter logger, SettingsStore settings, CancellationTokenSource ct, Turn lastTurn)
+        public static Turn FindTurn(LogWriter logger, SettingsStore settings, CancellationTokenSource ct)
         {
             Turn turn;
             var slicedBoard = GetSmoothBoard(settings,  ct);
             do
             {
-                Thread.Sleep(settings.RefreshRate);
+                Thread.Sleep(settings.RefreshDelay);
                 var _slicedBoard = GetSmoothBoard(settings, ct);
                 turn = AnalizingTurn(slicedBoard, _slicedBoard, settings, logger);
             } while (turn is null && !ct.IsCancellationRequested);

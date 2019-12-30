@@ -37,7 +37,7 @@ namespace Custom_Chess_Bot
             Engine = new ChessEngine(Settings.EnginePath);
             AI = new Controller(Settings);
         }
-        const string Completed = @"Completed";
+        const string GameDone = @"Game Done";
         private const int DelayTurns = 10;
         private const float DelayPart = 0.7f;
 
@@ -50,17 +50,16 @@ namespace Custom_Chess_Bot
             return delay;
         }
 
-        public Turn EnemyTurn(CancellationTokenSource ct, Turn lastTurn)
+        public Turn DetectTurn(CancellationTokenSource ct)
         {
-            var turn = ImageAnalysis.FindTurn(Log, Settings,ct, lastTurn);
+            var turn = ImageAnalysis.FindTurn(Log, Settings,ct);
             if (turn is null)
                 return null;
             if (MySide == Side.Black)
                 turn = turn.GetInverse();
-            Board.TurnIn(turn);
             return turn;
         }
-        public Turn MyTurn(CancellationTokenSource ct)
+        public Turn MakeTurn(CancellationTokenSource ct, bool suggest)
         {
             var rand = new Random();
             var skill = DefaultSkill;
@@ -70,14 +69,13 @@ namespace Custom_Chess_Bot
             var turn = Engine.Query("" + Board.GetMoves(), delay, skill);
             if (turn is null)
                 ct.Cancel();
-            if (!ct.IsCancellationRequested)
-                if (MySide == Side.Black)
-                {
-                    AI.MakeTurn(turn.GetInverse());
-                }
-                else
-                    AI.MakeTurn(turn);
-            Board.TurnIn(turn);
+                if (!ct.IsCancellationRequested&&!suggest)
+                    if (MySide == Side.Black)
+                    {
+                        AI.MakeTurn(turn.GetInverse());
+                    }
+                    else
+                        AI.MakeTurn(turn);
             return turn;
         }
         public void PlayThread(CancellationTokenSource ct, Form1 form)
@@ -92,25 +90,26 @@ namespace Custom_Chess_Bot
             }
             Log.Report(MySide);
             form.Log("" + MySide);
-            if (MySide == Side.Black&& !ct.Token.IsCancellationRequested)
-            {
-                var str = ""+EnemyTurn(ct, null);
-                form.Log(str);
-                Log.Report(str);
-            }
+            var side = new Side(MySide.ToString());
             while (!ct.Token.IsCancellationRequested)
             {
-                var myTurn = MyTurn(ct);
-                var _str = "" +myTurn;
-                form.Log(_str);
-                Log.Report(_str);
-                var enemyTurn = EnemyTurn(ct, myTurn);
-                var str = "" + enemyTurn;
+                if (side == Side.White)
+                {
+                    Task.Run(()=>{
+                        var turn = MakeTurn(ct, form.Suggest);
+                        if (form.Suggest)
+                            form.Log("" + turn);
+                    });
+                }
+                side.Switch();
+                var turn = DetectTurn(ct);
+                Board.TurnIn(turn);
+                var str = "" + turn;
                 form.Log(str);
                 Log.Report(str);
             }
-            form.Log(Completed);
-            Log.Report(Completed);
+            form.Log(GameDone);
+            Log.Report(GameDone);
         }
 
         public void Dispose()
