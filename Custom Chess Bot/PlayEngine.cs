@@ -50,9 +50,9 @@ namespace Custom_Chess_Bot
             return delay;
         }
 
-        public Turn EnemyTurn(CancellationTokenSource ct)
+        public Turn EnemyTurn(CancellationTokenSource ct, Turn lastTurn)
         {
-            var turn = ImageAnalysis.FindTurn(Log, Settings,ct);
+            var turn = ImageAnalysis.FindTurn(Log, Settings,ct, lastTurn);
             if (turn == null)
                 return null;
             if (MySide == Side.Black)
@@ -94,16 +94,17 @@ namespace Custom_Chess_Bot
             form.Log("" + MySide);
             if (MySide == Side.Black&& !ct.Token.IsCancellationRequested)
             {
-                var str = ""+EnemyTurn(ct);
+                var str = ""+EnemyTurn(ct, null);
                 form.Log(str);
                 Log.Report(str);
             }
             while (!ct.Token.IsCancellationRequested)
             {
-                var _str = ""+MyTurn(ct);
+                    var lastTurn = MyTurn(ct);
+                var _str = "" +lastTurn;
                 form.Log(_str);
                 Log.Report(_str);
-                var str = ""+EnemyTurn(ct);
+                var str = ""+EnemyTurn(ct, lastTurn);
                 form.Log(str);
                 Log.Report(str);
             }

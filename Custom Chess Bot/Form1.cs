@@ -27,6 +27,8 @@ namespace Custom_Chess_Bot
             SetupKeyboardHooks();
             InitializeComponent();
             Log(Ready);
+            var b = new ChessBoard();
+            b.TurnIn(new Turn("e2e4"));
         }
         private void KeyPressHandler(object sender, GlobalKeyboardHookEventArgs e)
         {

@@ -63,9 +63,13 @@ namespace Custom_Chess_Bot
         }
         public void ApplySwap()
         {
-            var c = Start;
+            var i = Start;
             Start = End;
-            End = c;
+            End = i;
+        }
+        public Turn GetSwap()
+        {
+            return new Turn(End, Start, TurnSide, Promote);
         }
         public void Invalidate()
         {
