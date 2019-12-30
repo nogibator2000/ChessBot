@@ -92,5 +92,35 @@ namespace Custom_Chess_Bot
             wordEnd = End % SettingsStore.BoardLenght;
             numEnd = End / SettingsStore.BoardLenght;
         }
+        public static bool operator ==(Turn turn, Turn _turn)
+        {
+            if (turn == null)
+            {
+                if (_turn == null)
+                    return true;
+                return false;
+            }
+            return (turn.Start==_turn.Start||turn.Start==_turn.End)&&(turn.End==_turn.End||turn.End==_turn.Start);
+        }
+        public static bool operator !=(Turn turn, Turn _turn)
+        {
+            return !(turn==_turn);
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+            return ReferenceEquals(this, obj) ? true : obj.GetType() == GetType() && (Turn)obj == this;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return Start*End;
+            }
+        }
     }
 }

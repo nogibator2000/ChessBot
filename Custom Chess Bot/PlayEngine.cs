@@ -53,7 +53,7 @@ namespace Custom_Chess_Bot
         public Turn EnemyTurn(CancellationTokenSource ct, Turn lastTurn)
         {
             var turn = ImageAnalysis.FindTurn(Log, Settings,ct, lastTurn);
-            if (turn == null)
+            if (turn is null)
                 return null;
             if (MySide == Side.Black)
                 turn = turn.GetInverse();
@@ -68,7 +68,7 @@ namespace Custom_Chess_Bot
                 skill = RetardedSkill;
             var delay = CalcDelay(Settings.TurnMinDelay, Settings.TurnMaxDelay);
             var turn = Engine.Query("" + Board.GetMoves(), delay, skill);
-            if (turn == null)
+            if (turn is null)
                 ct.Cancel();
             if (!ct.IsCancellationRequested)
                 if (MySide == Side.Black)
@@ -100,11 +100,12 @@ namespace Custom_Chess_Bot
             }
             while (!ct.Token.IsCancellationRequested)
             {
-                    var lastTurn = MyTurn(ct);
-                var _str = "" +lastTurn;
+                var myTurn = MyTurn(ct);
+                var _str = "" +myTurn;
                 form.Log(_str);
                 Log.Report(_str);
-                var str = ""+EnemyTurn(ct, lastTurn);
+                var enemyTurn = EnemyTurn(ct, myTurn);
+                var str = "" + enemyTurn;
                 form.Log(str);
                 Log.Report(str);
             }

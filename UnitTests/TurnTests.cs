@@ -45,5 +45,12 @@ namespace UnitTests
             turn = turn.GetInverse();
             Assert.Equal("" + turn, "" + _turn);
         }
+        [Fact]
+        public void TurnEqual()
+        {
+            var turn = new Turn("h5d1");
+            var _turn = new Turn("d1h5");
+            Assert.True(turn == _turn);
+        }
     }
 }

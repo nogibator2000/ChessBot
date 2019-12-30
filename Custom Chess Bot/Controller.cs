@@ -40,7 +40,7 @@ namespace Custom_Chess_Bot
         }
         public void MakeTurn(Turn turn)
         {
-            if(turn != null)
+            if(!(turn is null))
             {
                 turn.ToInt(out int ws, out int ns, out int we, out int ne);
                 ns = SettingsStore.BoardLenght - 1 - ns;
@@ -54,7 +54,7 @@ namespace Custom_Chess_Bot
         public string SimulateMakeTurn(Turn turn)
         {
             var str = ""; 
-            if (turn != null)
+            if (!(turn is null))
             {
                 turn.ToInt(out int ws, out int ns, out int we, out int ne);
                 ns = SettingsStore.BoardLenght - 1 - ns;

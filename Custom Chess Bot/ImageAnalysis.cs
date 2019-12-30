@@ -75,12 +75,7 @@ namespace Custom_Chess_Bot
                 Thread.Sleep(settings.RefreshRate);
                 var _slicedBoard = GetSmoothBoard(settings, ct);
                 turn = AnalizingTurn(slicedBoard, _slicedBoard, settings, logger);
-                if (!(lastTurn is null)&&(turn == lastTurn || turn == lastTurn.GetSwap()))
-                {
-                    slicedBoard = _slicedBoard;
-                    turn = null;
-                }
-            } while (turn == null && !ct.IsCancellationRequested);
+            } while (turn is null && !ct.IsCancellationRequested);
             return turn;
         }
 

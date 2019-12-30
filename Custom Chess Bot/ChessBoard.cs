@@ -96,7 +96,7 @@ namespace Custom_Chess_Bot
         /// <summary>Method <c>Turn</c> make turn and return true if it valid or return false.</summary>
         public bool TurnIn(Turn turn)
         {
-            if (turn == null)
+            if (turn is null)
                 return false;
             if (turn.TurnSide is null)
                 turn.ApplySide(SideToMove);
