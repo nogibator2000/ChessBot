@@ -18,6 +18,8 @@ namespace Custom_Chess_Bot
         ChessEngine Engine;
         Controller AI;
         bool CustomGame;
+        Turn DetectedTurn;
+
         private const int DefaultSkill = 20;
         private const int RetardedSkill = 1;
         public PlayEngine(string str=null)
@@ -91,6 +93,15 @@ namespace Custom_Chess_Bot
             Log.Report(MySide);
             form.Log("" + MySide);
             var side = new Side(MySide.ToString());
+            var re = new ManualResetEvent(false);
+            Task.Run(() =>
+            {
+                while (!ct.Token.IsCancellationRequested)
+                {
+                    DetectedTurn = DetectTurn(ct);
+                    re.Set();
+                }
+            });
             while (!ct.Token.IsCancellationRequested)
             {
                 if (side == Side.White)
@@ -101,8 +112,11 @@ namespace Custom_Chess_Bot
                             form.Log("" + turn);
                     });
                 }
+                re.Reset();
+                re.WaitOne();
                 side.Switch();
-                var turn = DetectTurn(ct);
+                var turn = DetectedTurn;
+//                var turn = DetectTurn(ct);
                 Board.TurnIn(turn);
                 var str = "" + turn;
                 form.Log(str);

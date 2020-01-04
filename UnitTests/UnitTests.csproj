@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Custom Chess Bot\Custom Chess Bot.csproj" />
+    <ProjectReference Include="..\Custom Chess Bot\Chess Bot.csproj" />
   </ItemGroup>
 
 </Project>

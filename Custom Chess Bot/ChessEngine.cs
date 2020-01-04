@@ -15,7 +15,7 @@ namespace Custom_Chess_Bot
         private const string GoMTFlag = "go movetime ";
         private const string BestMoveFlag = "bestmove ";
         private const string SplitSymbol = " ";
-        private ManualResetEvent Promise;
+        private ManualResetEvent RE;
         private string Move;
         public bool Running;
         private readonly Process ChessProcess;
@@ -54,25 +54,25 @@ namespace Custom_Chess_Bot
                 if (e.Data == null)
                 {
                     Running = false;
-                    Promise.Set();
+                    RE.Set();
                 }
                 else if (e.Data.Contains(BestMoveFlag))
                 {
                     var start = e.Data.IndexOf(BestMoveFlag) + BestMoveFlag.Length;
                     Move = e.Data.Substring(start).Split(SplitSymbol)[0];
-                    Promise.Set();
+                    RE.Set();
                 }
         }
 
         public Turn Query(string query, int mt = 500, int skill= 20)
         {
-            Promise = new ManualResetEvent(false);
+            RE = new ManualResetEvent(false);
             SendLine(SkillFlag + skill);
             SendLine(TimeFlag + mt);
             SendLine(query);
             SendLine(GoMTFlag + mt);
-            Promise.Reset();
-            Promise.WaitOne();
+            RE.Reset();
+            RE.WaitOne();
             if (!Running)
                 return null;
             return new Turn(Move);
@@ -83,8 +83,8 @@ namespace Custom_Chess_Bot
         {
             if (ChessProcess != null)
                 ChessProcess.Dispose();
-            if(Promise != null)
-            Promise.Dispose();
+            if(RE != null)
+            RE.Dispose();
         }
     }
 }
