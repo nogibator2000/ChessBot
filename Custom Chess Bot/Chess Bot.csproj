@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Custom_Chess_Bot</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+</Project>
