@@ -8,4 +8,8 @@
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
+  </ItemGroup>
+
 </Project>

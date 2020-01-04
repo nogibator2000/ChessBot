@@ -81,10 +81,10 @@ namespace Custom_Chess_Bot
 
             public Prompt(string text, string caption)
             {
-                Result = ShowDialog(text, caption);
+                Result = ShowDialog(text, caption, StartFen);
             }
             private const string StartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-            private string ShowDialog(string text, string caption)
+            private string ShowDialog(string text, string caption, string fen)
             {
                 prompt = new Form()
                 {
@@ -96,7 +96,7 @@ namespace Custom_Chess_Bot
                     TopMost = true
                 };
                 Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Dock = DockStyle.Top, TextAlign = ContentAlignment.MiddleCenter };
-                TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 500, Text = StartFen };
+                TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 500, Text = fen };
                 Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 170, DialogResult = DialogResult.OK };
                 confirmation.Click += (sender, e) => { prompt.Close(); };
                 prompt.Controls.Add(textBox);

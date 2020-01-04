@@ -13,6 +13,7 @@ namespace Custom_Chess_Bot
         public int AnimationHash;
         public const int AnimationWindow = 0;
         public static string SettingsPath = @"Settings.txt";
+        public static string DetectionPresetPath = @"DP.txt";
         public static string LogPath = @"Logs.txt";
         public const int BoardLenght = 8;
         public int Hash;
@@ -93,8 +94,8 @@ namespace Custom_Chess_Bot
             Window = 0.2f;
             Threshold = 0.9f;
             EnginePath = @"C:\Users\nogib\Downloads\stockfish-10-win\stockfish-10-win\Windows\stockfish_10_x64.exe";
-            AnimationDelay = 3;
-            RefreshDelay = 3;
+            AnimationDelay = 0;
+            RefreshDelay = 0;
             TurnMinDelay = 500;
             TurnMaxDelay = 2000;
             WhiteBright = 0.9f;

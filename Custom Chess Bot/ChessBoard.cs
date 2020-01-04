@@ -24,6 +24,15 @@ namespace Custom_Chess_Bot
         private int Turns;
         private OO OOEnable;
         private string Fen;
+        public ChessBoard(List<List<string>> cells, Side side)
+        {
+            Cells = cells;
+            SideToMove = side;
+            OOEnable = new OO();
+            IDKWTF = "-";
+            HalfTurns = 0;
+            Turns = 1;
+        }
         public ChessBoard(string fen = StartFen)
         {
             Moves = "";

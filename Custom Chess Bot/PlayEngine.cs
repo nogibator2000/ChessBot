@@ -100,27 +100,27 @@ namespace Custom_Chess_Bot
                 {
                     DetectedTurn = DetectTurn(ct);
                     re.Set();
+                    Log.Report(DetectedTurn+"");
                 }
             });
             while (!ct.Token.IsCancellationRequested)
             {
                 if (side == Side.White)
                 {
-                    Task.Run(()=>{
+                    Task.Run(() =>
+                    {
                         var turn = MakeTurn(ct, form.Suggest);
                         if (form.Suggest)
-                            form.Log("" + turn);
+                            form.Log(turn.ToString());
                     });
                 }
                 side.Switch();
                 re.WaitOne();
                 re.Reset();
-                var turn = DetectedTurn;
-                Board.TurnIn(turn);
-                var str = "" + turn;
-                form.Log(str);
-                Log.Report(str);
+                Board.TurnIn(DetectedTurn);
+                form.Log(DetectedTurn + "");
             }
+            Thread.Sleep(5);
             form.Log(GameDone);
             Log.Report(GameDone);
         }
