@@ -112,11 +112,10 @@ namespace Custom_Chess_Bot
                             form.Log("" + turn);
                     });
                 }
-                re.Reset();
-                re.WaitOne();
                 side.Switch();
+                re.WaitOne();
+                re.Reset();
                 var turn = DetectedTurn;
-//                var turn = DetectTurn(ct);
                 Board.TurnIn(turn);
                 var str = "" + turn;
                 form.Log(str);
