@@ -51,15 +51,18 @@ namespace Custom_Chess_Bot
             }
             return null;
         }
-        public static Turn FindTurn(LogWriter logger, SettingsStore settings, CancellationTokenSource ct)
+        public static Turn FindTurn(LogWriter logger, SettingsStore settings, CancellationTokenSource ct, ref List<Bitmap> LastBoard)
         {
             Turn turn;
-            var slicedBoard = GetSmoothBoard(settings,  ct);
+            if (LastBoard is null)
+              LastBoard = GetSmoothBoard(settings,  ct);
             do
             {
                 Thread.Sleep(settings.RefreshDelay);
-                var _slicedBoard = GetSmoothBoard(settings, ct);
-                turn = AnalizingTurn(slicedBoard, _slicedBoard, settings, logger);
+                var newBoard = GetSmoothBoard(settings, ct);
+                turn = AnalizingTurn(LastBoard, newBoard, settings, logger);
+                if (!(turn is null))
+                    LastBoard = newBoard;
             } while (turn is null && !ct.IsCancellationRequested);
             return turn;
         }

@@ -10,7 +10,6 @@ namespace Custom_Chess_Bot
 {
     public class ChessEngine:IDisposable
     {
-        private const string TimeFlag = "setoption name Minimum Thinking Time value ";
         private const string SkillFlag = "setoption name Skill Level value ";
         private const string GoMTFlag = "go movetime ";
         private const string BestMoveFlag = "bestmove ";
@@ -66,15 +65,19 @@ namespace Custom_Chess_Bot
 
         public Turn Query(string query, int mt = 500, int skill= 20)
         {
+            var check = new Stopwatch();
+            check.Start();
             RE = new ManualResetEvent(false);
             SendLine(SkillFlag + skill);
-            SendLine(TimeFlag + mt);
             SendLine(query);
             SendLine(GoMTFlag + mt);
             RE.Reset();
             RE.WaitOne();
             if (!Running)
                 return null;
+            check.Stop();
+            if (check.ElapsedMilliseconds < mt)
+                Thread.Sleep(mt - Convert.ToInt32(check.ElapsedMilliseconds));
             return new Turn(Move);
         }
 

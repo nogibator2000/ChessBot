@@ -15,8 +15,8 @@ namespace Custom_Chess_Bot
         PictureBox PicBox;
         private static CancellationTokenSource CTDisplay;
         const string Ready = @"Ready!";
-        const string TM = @"[F10]Turn Mode";
-        const string SM = @"[F10]Suggest Mode!";
+        const string TM = @"[F10] Auto turn";
+        const string SM = @"[F10] Suggest";
         public bool Suggest = false;
         public bool KeyUpDown = false;
         public void SetupKeyboardHooks()
@@ -69,6 +69,7 @@ namespace Custom_Chess_Bot
                 panel1.Invoke(new MethodInvoker(delegate
                 {
                     panel1.Controls.Clear();
+                    if (!(PicBox is null))
                     panel1.Controls.Add(PicBox);
                 }));
             }
@@ -79,13 +80,14 @@ namespace Custom_Chess_Bot
             private Form prompt { get; set; }
             public string Result { get; }
 
-            public Prompt(string text, string caption)
+            public Prompt(string text, string caption, string fen)
             {
-                Result = ShowDialog(text, caption, StartFen);
+                Result = ShowDialog(text, caption, fen);
             }
-            private const string StartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            private const string StartFen = " w KQkq - 0 1";
             private string ShowDialog(string text, string caption, string fen)
             {
+
                 prompt = new Form()
                 {
                     Width = 550,
@@ -96,7 +98,7 @@ namespace Custom_Chess_Bot
                     TopMost = true
                 };
                 Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Dock = DockStyle.Top, TextAlign = ContentAlignment.MiddleCenter };
-                TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 500, Text = fen };
+                TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 500, Text = fen+StartFen };
                 Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 170, DialogResult = DialogResult.OK };
                 confirmation.Click += (sender, e) => { prompt.Close(); };
                 prompt.Controls.Add(textBox);
@@ -104,7 +106,7 @@ namespace Custom_Chess_Bot
                 prompt.Controls.Add(textLabel);
                 prompt.AcceptButton = confirmation;
 
-                return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+                return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : null;
             }
 
             public void Dispose()
@@ -116,26 +118,24 @@ namespace Custom_Chess_Bot
             }
         }
 
-        private void Button10_Click(object sender, EventArgs e)
+        private void CustomRun(object sender, EventArgs e)
         {
             if (!isRunning)
             {
                     isRunning = true;
-                using (Prompt prompt = new Prompt("enter custom fen string", "Run from Custom Fen"))
+                var detect = new Detection();
+                var fen = ChessBoard.GetFenS(detect.DetectPos());
+                using (Prompt prompt = new Prompt("check fen string", "Run from Custom position (beta)", fen))
                 {
                     string result = prompt.Result;
                     CTPlay = new CancellationTokenSource();
-                    Task.Run(() =>
-                    {
-                        var tsk = Task.Run(() =>
+                        Task.Run(() =>
                         {
-                            using (var pe = new PlayEngine(result))
-                                pe.PlayThread(CTPlay, this);
+                            if(!(result is null))
+                            using (var pe = new MainThread(result))
+                                pe.Run(CTPlay, this);
                             isRunning = false;
                         });
-                        tsk.Wait();
-                        tsk.Dispose();
-                    });
                 }
             }
         }
@@ -146,22 +146,24 @@ namespace Custom_Chess_Bot
                 CTPlay.Cancel();
             }
         }
-        private void Button6_Click(object sender, EventArgs e)
+        private void OpenSettings(object sender, EventArgs e)
         {
-            var process = new Process
+            new SettingsStore();
+            using (var process = new Process
             {
                 StartInfo = new ProcessStartInfo()
                 {
                     UseShellExecute = true,
                     FileName = SettingsStore.SettingsPath
                 }
-            };
-
-            process.Start();
-            process.WaitForExit();
-            process.Dispose();
+            }
+            )
+            {
+                process.Start();
+                process.WaitForExit();
+            }
         }
-        private void Button7_Click(object sender, EventArgs e)
+        private void ToggleSuggest(object sender, EventArgs e)
         {
             Suggest = !Suggest;
             if (Suggest)
@@ -189,6 +191,7 @@ namespace Custom_Chess_Bot
             var BoardSize = new Size(secondPosition.X - firstPosition.X, secondPosition.Y - firstPosition.Y);
             var settings = new SettingsStore();
             settings.CalibrateBoard(BoardSize, firstPosition);
+            new Detection();
             log.Text = @"Saved!";
         }
         public void Log(string _log)
@@ -211,12 +214,13 @@ namespace Custom_Chess_Bot
             {
                 var settings = new SettingsStore();
                 DisplayBitMap(ImageAnalysis.CaptureScreen(settings));
-                Thread.Sleep(34);
+                Thread.Sleep(Displayfps);
             }
         }
+        private const int Displayfps = 200;
         private void DisplayButton(object sender, EventArgs e)
         {
-            if (button5.Text == "Display")
+            if (button5.Text == "Test display")
             {
                 CTDisplay = new CancellationTokenSource();
                 Task.Run(() => DisplayThread(CTDisplay), CTDisplay.Token);
@@ -225,9 +229,10 @@ namespace Custom_Chess_Bot
             else
             {
                 CTDisplay.Cancel();
+                Thread.Sleep(1);
                 PicBox.Dispose();
                 CTDisplay.Dispose();
-                button5.Text = "Display";
+                button5.Text = "Test display";
             }
         }
         private void RunBtn(object sender, EventArgs e)
@@ -239,8 +244,8 @@ namespace Custom_Chess_Bot
                 Task.Run(() => {
                     var tsk = Task.Run(() =>
                     {
-                        using (var pe = new PlayEngine())
-                            pe.PlayThread(CTPlay, this);
+                        using (var pe = new MainThread())
+                            pe.Run(CTPlay, this);
                         isRunning = false;
                     });
                     tsk.Wait();

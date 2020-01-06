@@ -72,16 +72,16 @@ namespace Custom_Chess_Bot
         {
             return PositionFenWord + FenSpace + Fen + FenSpace + MovesWord + FenSpace + Moves;
         }
-        public string GetFen()
+        public static string GetFenS(List<List<string>> cells)
         {
             string fen = "";
-            for (int rank = Cells.Count()-1; rank >= 0 ; rank--)
+            for (int rank = cells.Count() - 1; rank >= 0; rank--)
             {
                 int empty = 0;
                 string rankFen = "";
-                for (int file = 0; file < Cells[rank].Count(); file++)
+                for (int file = 0; file < cells[rank].Count(); file++)
                 {
-                    if (Cells[rank][file] == Figures.Space)
+                    if (cells[rank][file] == Figures.Space)
                     {
                         empty++;
                     }
@@ -89,7 +89,7 @@ namespace Custom_Chess_Bot
                     {
                         if (empty != 0)
                             rankFen += empty;
-                        rankFen += Cells[rank][file];
+                        rankFen += cells[rank][file];
                         empty = 0;
                     }
                 }
@@ -100,7 +100,11 @@ namespace Custom_Chess_Bot
                     fen += FenSeparator;
                 }
             }
-            return fen + FenSpace + SideToMove + FenSpace + OOEnable + FenSpace + IDKWTF + FenSpace + HalfTurns + FenSpace + Turns;
+            return fen;
+        }
+        public string GetFen()
+        {
+            return GetFenS(Cells) + FenSpace + SideToMove + FenSpace + OOEnable + FenSpace + IDKWTF + FenSpace + HalfTurns + FenSpace + Turns;
         }
         /// <summary>Method <c>Turn</c> make turn and return true if it valid or return false.</summary>
         public bool TurnIn(Turn turn)
