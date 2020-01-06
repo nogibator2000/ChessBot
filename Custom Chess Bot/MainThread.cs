@@ -66,10 +66,16 @@ namespace Custom_Chess_Bot
         {
             var rand = new Random();
             var skill = DefaultSkill;
-            if (rand.Next(1, Settings.MissplayTurns + 1) == Settings.MissplayTurns)
-                skill = RetardedSkill;
             var delay = CalcDelay(Settings.TurnMinDelay, Settings.TurnMaxDelay);
-            var turn = Engine.Query(Board.GetMoves(), delay, skill);
+            var mt = Settings.MoveTime;
+            if (rand.Next(1, Settings.MissplayTurns + 1) == Settings.MissplayTurns)
+            {
+                skill = RetardedSkill;
+                mt = 1;
+            }
+            if (delay > mt)
+                Thread.Sleep(delay - mt);
+            var turn = Engine.Query(Board.GetMoves(), mt, skill);
             if (turn is null)
                 ct.Cancel();
                 if (!ct.IsCancellationRequested&&!suggest)

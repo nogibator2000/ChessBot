@@ -10,6 +10,7 @@ namespace Custom_Chess_Bot
     {
         private readonly Point FirstPoint;
         private readonly Size CellSize;
+        private int delay;
         [DllImport("user32.dll")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
@@ -19,6 +20,7 @@ namespace Custom_Chess_Bot
 //        private const int MOUSEEVENTF_RIGHTUP = 0x10;
         public Controller(SettingsStore settings)
         {
+            delay = settings.MouseClickDelay;
             FirstPoint = new Point(settings.BoardSize.Width / SettingsStore.BoardLenght / 2+settings.BoardPosition.X, settings.BoardSize.Height / SettingsStore.BoardLenght / 2+settings.BoardPosition.Y);
             CellSize = new Size(settings.BoardSize.Width / SettingsStore.BoardLenght, settings.BoardSize.Height / SettingsStore.BoardLenght);
         }

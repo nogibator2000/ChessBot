@@ -32,6 +32,8 @@ namespace Custom_Chess_Bot
         public float BlackBright;
         public bool LogEnable;
         public int TurnsForExtraDelay;
+        public int MoveTime;
+        public int MouseClickDelay;
         public SettingsStore()
         {
             Load();
@@ -56,7 +58,9 @@ namespace Custom_Chess_Bot
             "(accuracy)BlackBrightTreshold|" + BlackBright.ToString() + Environment.NewLine +
             "(debug)LogEnable|" + LogEnable.ToString() + Environment.NewLine +
             "(humanity)TurnsForExtraDelay|" + TurnsForExtraDelay.ToString() + Environment.NewLine +
-            "(humanity)TurnsForExtraDelay|" + DelayPart.ToString() + Environment.NewLine +
+            "(humanity)DelayPart|" + DelayPart.ToString() + Environment.NewLine +
+            "(humanity)MouseClickDelay|" + MouseClickDelay.ToString() + Environment.NewLine +
+            "MaxEngineTime|" + MoveTime.ToString() + Environment.NewLine +
             "(speed)AnimationHash|" + AnimationHash.ToString();            
             File.WriteAllText(SettingsPath, settings);
         }
@@ -82,7 +86,9 @@ namespace Custom_Chess_Bot
                 LogEnable = Convert.ToBoolean(settings[15].Split("|")[1]);
                 TurnsForExtraDelay = Convert.ToInt32(settings[16].Split("|")[1]);
                 DelayPart = Convert.ToSingle(settings[17].Split("|")[1]);
-                AnimationHash = Convert.ToInt32(settings[18].Split("|")[1]);
+                MouseClickDelay = Convert.ToInt32(settings[18].Split("|")[1]);
+                MoveTime = Convert.ToInt32(settings[19].Split("|")[1]);
+                AnimationHash = Convert.ToInt32(settings[20].Split("|")[1]);
             }
             catch
             {
@@ -111,6 +117,8 @@ namespace Custom_Chess_Bot
             LogEnable = true;
             AnimationHash = 200;
             MissplayTurns = 3;
+            MoveTime = 400;
+            MouseClickDelay = 333;
         }
         public void CalibrateBoard(Size boardSize, Point boardPosition)
         {
