@@ -27,9 +27,11 @@ namespace Custom_Chess_Bot
         public int RefreshDelay;
         public int TurnMinDelay;
         public int TurnMaxDelay;
+        public float DelayPart;
         public float WhiteBright;
         public float BlackBright;
         public bool LogEnable;
+        public int TurnsForExtraDelay;
         public SettingsStore()
         {
             Load();
@@ -53,6 +55,8 @@ namespace Custom_Chess_Bot
             "(accuracy)WhiteBrightTreshold|" + WhiteBright.ToString() + Environment.NewLine +
             "(accuracy)BlackBrightTreshold|" + BlackBright.ToString() + Environment.NewLine +
             "(debug)LogEnable|" + LogEnable.ToString() + Environment.NewLine +
+            "(humanity)TurnsForExtraDelay|" + TurnsForExtraDelay.ToString() + Environment.NewLine +
+            "(humanity)TurnsForExtraDelay|" + DelayPart.ToString() + Environment.NewLine +
             "(speed)AnimationHash|" + AnimationHash.ToString();            
             File.WriteAllText(SettingsPath, settings);
         }
@@ -76,7 +80,9 @@ namespace Custom_Chess_Bot
                 WhiteBright = Convert.ToSingle(settings[13].Split("|")[1]);
                 BlackBright = Convert.ToSingle(settings[14].Split("|")[1]);
                 LogEnable = Convert.ToBoolean(settings[15].Split("|")[1]);
-                AnimationHash = Convert.ToInt32(settings[16].Split("|")[1]);
+                TurnsForExtraDelay = Convert.ToInt32(settings[16].Split("|")[1]);
+                DelayPart = Convert.ToSingle(settings[17].Split("|")[1]);
+                AnimationHash = Convert.ToInt32(settings[18].Split("|")[1]);
             }
             catch
             {
@@ -98,6 +104,8 @@ namespace Custom_Chess_Bot
             RefreshDelay = 0;
             TurnMinDelay = 500;
             TurnMaxDelay = 2000;
+            TurnsForExtraDelay = 20;
+            DelayPart = 0.85f;
             WhiteBright = 0.9f;
             BlackBright = 0.35f;
             LogEnable = true;

@@ -42,13 +42,13 @@ namespace Custom_Chess_Bot
         }
         const string GameDone = @"Game Done";
         private const int DelayTurns = 10;
-        private const float DelayPart = 0.7f;
+        private const float DelayPart = 0.8f;
 
         private int CalcDelay(int minDelay, int maxDelay)
         {
             var rand = new Random();
             var delay =rand.Next(Convert.ToInt32(minDelay * DelayPart), Convert.ToInt32(maxDelay * DelayPart));
-            if (rand.Next(1, DelayTurns + 1) == 1)
+            if (rand.Next(1, Settings.TurnsForExtraDelay + 1) == 1)
                 delay+=rand.Next(Convert.ToInt32(minDelay * (1 - DelayPart) * DelayTurns), Convert.ToInt32(maxDelay * (1 - DelayPart) * DelayTurns));
             return delay;
         }
