@@ -49,7 +49,7 @@ namespace Custom_Chess_Bot
             "(humanity)MissplayEveryXTurns|" + MissplayTurns.ToString() + Environment.NewLine +
             "(accuracy)Window|" + Window.ToString() + Environment.NewLine +
             "(accuracy)Treshold|" + Threshold.ToString() + Environment.NewLine +
-            "(StockfishPath|" + EnginePath.ToString() + Environment.NewLine +
+            "StockfishPath|" + EnginePath.ToString() + Environment.NewLine +
             "(accuracy)AnimationDelay|" + AnimationDelay.ToString() + Environment.NewLine +
             "(speed)RefreshDelay|" + RefreshDelay.ToString() + Environment.NewLine +
             "(humanity)TurnDelayMin|" + TurnMinDelay.ToString() + Environment.NewLine +
@@ -105,7 +105,7 @@ namespace Custom_Chess_Bot
             Hash = 32;
             Window = 0.2f;
             Threshold = 0.9f;
-            EnginePath = @"C:\Users\nogib\Downloads\stockfish-10-win\stockfish-10-win\Windows\stockfish_10_x64.exe";
+            EnginePath = @"\stockfish_10_x32.exe";
             AnimationDelay = 0;
             RefreshDelay = 0;
             TurnMinDelay = 500;
