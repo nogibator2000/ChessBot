@@ -105,7 +105,7 @@ namespace Custom_Chess_Bot
             Hash = 32;
             Window = 0.2f;
             Threshold = 0.9f;
-            EnginePath = @"\stockfish_10_x32.exe";
+            EnginePath = @"stockfish_10_x32.exe";
             AnimationDelay = 0;
             RefreshDelay = 0;
             TurnMinDelay = 500;
