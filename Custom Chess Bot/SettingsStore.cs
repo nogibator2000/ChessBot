@@ -34,6 +34,9 @@ namespace Custom_Chess_Bot
         public int TurnsForExtraDelay;
         public int MoveTime;
         public int MouseClickDelay;
+        public string Option1;
+        public string Option2;
+        public string Option3;
         public SettingsStore()
         {
             Load();
@@ -61,7 +64,11 @@ namespace Custom_Chess_Bot
             "(humanity)DelayPart|" + DelayPart.ToString() + Environment.NewLine +
             "(humanity)MouseClickDelay|" + MouseClickDelay.ToString() + Environment.NewLine +
             "MaxEngineTime|" + MoveTime.ToString() + Environment.NewLine +
-            "(speed)AnimationHash|" + AnimationHash.ToString();            
+            "(speed)AnimationHash|" + AnimationHash.ToString() + Environment.NewLine +
+            "Option1|" + Option1.ToString() + Environment.NewLine +
+            "Option2|" + Option2.ToString() + Environment.NewLine +
+            "Option3|" + Option3.ToString();
+            
             File.WriteAllText(SettingsPath, settings);
         }
         private void Load()
@@ -89,6 +96,9 @@ namespace Custom_Chess_Bot
                 MouseClickDelay = Convert.ToInt32(settings[18].Split("|")[1]);
                 MoveTime = Convert.ToInt32(settings[19].Split("|")[1]);
                 AnimationHash = Convert.ToInt32(settings[20].Split("|")[1]);
+                Option1 = settings[21].Split("|")[1];
+                Option2 = settings[22].Split("|")[1];
+                Option3 = settings[23].Split("|")[1];
             }
             catch
             {
@@ -119,6 +129,9 @@ namespace Custom_Chess_Bot
             MissplayTurns = 3;
             MoveTime = 400;
             MouseClickDelay = 333;
+            Option1 = @"null";
+            Option2 = @"null";
+            Option3 = @"null";
         }
         public void CalibrateBoard(Size boardSize, Point boardPosition)
         {

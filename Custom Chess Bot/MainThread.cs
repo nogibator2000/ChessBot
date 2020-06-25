@@ -37,7 +37,7 @@ namespace Custom_Chess_Bot
             }
             Settings = new SettingsStore();
             Log = new LogWriter(Settings);
-            Engine = new ChessEngine(Settings.EnginePath);
+            Engine = new ChessEngine(Settings.EnginePath, Settings.Option1, Settings.Option2, Settings.Option3);
             AI = new Controller(Settings);
         }
         const string GameDone = @"Game Done";

@@ -18,8 +18,14 @@ namespace Custom_Chess_Bot
         private string Move;
         public bool Running;
         private readonly Process ChessProcess;
-        public ChessEngine(string  path)
+        string _option1;
+        string _option2;
+        string _option3;
+        public ChessEngine(string  path, string option1, string option2, string option3)
         {
+            _option1 = option1;
+            _option2 = option2;
+            _option3 = option3;
             Running = true;
             ProcessStartInfo si = new ProcessStartInfo()
             {
@@ -69,6 +75,18 @@ namespace Custom_Chess_Bot
             check.Start();
             RE = new ManualResetEvent(false);
             SendLine(SkillFlag + skill);
+            if (_option1 != @"null")
+            {
+                SendLine(_option1);
+            }
+            if (_option2 != @"null")
+            {
+                SendLine(_option2);
+            }
+            if (_option3 != @"null")
+            {
+                SendLine(_option3);
+            }
             SendLine(query);
             SendLine(GoMTFlag + mt);
             RE.Reset();
